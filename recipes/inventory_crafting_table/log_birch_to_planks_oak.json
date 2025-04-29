@@ -1,0 +1,10 @@
+{
+  "recipe": [
+    [18, null],
+    [null, null]
+  ],
+  "output": {
+    "id": 7,
+    "quantity": 4
+  }
+}
