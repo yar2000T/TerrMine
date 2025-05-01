@@ -396,32 +396,16 @@ try:
             (TILE_SIZE, TILE_SIZE)),
     ]
 
-    arrow_stages = [
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_1.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_2.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_3.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_4.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_5.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_6.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_7.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_8.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_9.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_10.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_11.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_12.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_13.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_14.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_15.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_16.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_17.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_18.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_19.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_20.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_21.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_22.png")).convert_alpha(screen),
-        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_23.png")).convert_alpha(screen),
-    ]
+    def load_and_scale(path, scale_factor):
+        image = pygame.image.load(path).convert_alpha(screen)
+        width, height = image.get_size()
+        return pygame.transform.smoothscale(image, (int(width * scale_factor), int(height * scale_factor)))
 
+
+    arrow_stages = [
+        load_and_scale(os.path.join(BASE_DIR, f"assets\\arrow_stages\\arrow_stage_{i}.png"), 1.8)
+        for i in range(1, 24)
+    ]
 
     block_hardness = {
         1: 0.5,   # Dirt
@@ -511,11 +495,9 @@ try:
     SMELT_RECIPES = {
         49: {"result": 15, "smelt_time": 8},  # Sand -> Glass
     }
-    furnaces = [] #{"x": int, "y": int, "fuel": [id, count], "input": [id, count], "output": [id, count], "burn_time": float, "smelt_progress": float}
+    furnaces = [] # {"x": int, "y": int, "fuel": [id, count], "input": [id, count], "output": [id, count], "burn_time": float, "smelt_progress": float}
 
     loot_counts = {item_id: 0 for item_id in rarities}
-
-    arrow = pygame.image.load(os.path.join(BASE_DIR, "assets\\gui\\arrow.png")).convert_alpha(screen)
 
     dead = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\You died!.png")).convert_alpha(screen),
                                   (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -1555,11 +1537,11 @@ try:
 
 
     def draw_furnace_ui(screen, furnace):
-        ui_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 75, 300, 150)
+        ui_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 75, 200, 150)
         pygame.draw.rect(screen, (50, 50, 50), ui_rect)
         pygame.draw.rect(screen, WHITE, ui_rect, 2)
 
-        input_rect = pygame.Rect(ui_rect.x + 20, ui_rect.y + 50, TILE_SIZE, TILE_SIZE)
+        input_rect = pygame.Rect(ui_rect.x + 20, ui_rect.y + 20, TILE_SIZE, TILE_SIZE)
         pygame.draw.rect(screen, (80, 80, 80), input_rect)
         pygame.draw.rect(screen, WHITE, input_rect, 2)
         if furnace["input"]:
@@ -1575,7 +1557,7 @@ try:
             qty_text = font1_.render(str(furnace["fuel"][1]), True, WHITE)
             screen.blit(qty_text, (fuel_rect.right - 12, fuel_rect.bottom - 18))
 
-        output_rect = pygame.Rect(ui_rect.x + 240, ui_rect.y + 75, TILE_SIZE, TILE_SIZE)
+        output_rect = pygame.Rect(ui_rect.x + 130, ui_rect.y + 65, TILE_SIZE, TILE_SIZE)
         pygame.draw.rect(screen, (80, 80, 80), output_rect)
         pygame.draw.rect(screen, WHITE, output_rect, 2)
         if furnace["output"]:
@@ -1583,24 +1565,24 @@ try:
             qty_text = font1_.render(str(furnace["output"][1]), True, WHITE)
             screen.blit(qty_text, (output_rect.right - 12, output_rect.bottom - 18))
 
-        arrow_x = ui_rect.x + 80
+        arrow_x = ui_rect.x + 70
         arrow_y = ui_rect.y + 65
-        screen.blit(arrow, (arrow_x, arrow_y))
 
         if furnace["input"] and furnace["burn_time"] > 0:
             recipe = SMELT_RECIPES.get(furnace["input"][0])
             if recipe:
                 progress = furnace["smelt_progress"] / recipe["smelt_time"]
-                bar_width = int(arrow.get_width() * min(progress, 1.0))
-                bar = pygame.Surface((bar_width, arrow.get_height()), pygame.SRCALPHA)
-                bar.fill((255, 255, 0, 180))
-                screen.blit(bar, (arrow_x, arrow_y))
+                stage_index = 23 - int(progress * 22)
+                stage_index = max(1, min(stage_index, 23))
+                screen.blit(arrow_stages[stage_index - 1], (arrow_x, arrow_y))
+        else:
+            screen.blit(arrow_stages[22], (arrow_x, arrow_y))
 
         if furnace["burn_time"] > 0:
             burn_percent = furnace["burn_time"] / FUEL_BURN_TIMES.get(furnace["fuel"][0], 1)
             stage_index = int((1 - burn_percent) * (len(fire_stages) - 1))
             fire_img = fire_stages[stage_index]
-            screen.blit(fire_img, (ui_rect.x + 20, ui_rect.y + 10))
+            screen.blit(fire_img, (ui_rect.x + 20, ui_rect.y + 60))
 
         if dragging_item and dragging_pos:
             screen.blit(textures[dragging_item[0]],
@@ -1773,9 +1755,9 @@ try:
                         fx = SCREEN_WIDTH // 2 - 150
                         fy = SCREEN_HEIGHT // 2 - 75
 
-                        input_rect = pygame.Rect(fx + 20, fy + 50, TILE_SIZE, TILE_SIZE)
+                        input_rect = pygame.Rect(fx + 20, fy + 20, TILE_SIZE, TILE_SIZE)
                         fuel_rect = pygame.Rect(fx + 20, fy + 100, TILE_SIZE, TILE_SIZE)
-                        output_rect = pygame.Rect(fx + 240, fy + 75, TILE_SIZE, TILE_SIZE)
+                        output_rect = pygame.Rect(fx + 130, fy + 65, TILE_SIZE, TILE_SIZE)
 
                         furnace = current_open_furnace
 
@@ -2569,7 +2551,6 @@ try:
                     pygame.draw.rect(screen, WHITE, rect, 2)
 
             pygame.draw.rect(screen, WHITE, (CRAFTING_RECT.x + 195, CRAFTING_RECT.y + 80, 40, 40), 2)
-            screen.blit(arrow, (CRAFTING_RECT.x + 140, CRAFTING_RECT.y + 88))
 
             if dragging_item is not None and dragging_pos:
                 try:
@@ -2606,7 +2587,6 @@ try:
 
             pygame.draw.rect(screen, WHITE, (INVENTORY_CRAFTING_RECT.x + 150, INVENTORY_CRAFTING_RECT.y + 60, 40, 40),
                              2)
-            screen.blit(arrow, (INVENTORY_CRAFTING_RECT.x + 110, INVENTORY_CRAFTING_RECT.y + 68))
 
             inventory_output = check_inventory_crafting_result(INVENTORY_CRAFTING_GRID)
 
