@@ -8,3 +8,5 @@
 /world.trrm
 /dist/TerrMine_install.exe
 /dist/TerrMine.exe
+/saves/
+/commands/__pycache__/

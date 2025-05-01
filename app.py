@@ -115,6 +115,24 @@ try:
     }
     CRAFTING_RECIPES = {
     }
+    SMELT_RECIPES = {
+    }
+
+    for filename in os.listdir(os.path.join(BASE_DIR, "recipes", "furnace")):
+        if filename.endswith(".json"):
+            filepath = os.path.join(BASE_DIR, "recipes", "furnace", filename)
+            with open(filepath, 'r') as f:
+                data = json.load(f)
+
+            for input_id_str, recipe in data.items():
+                input_id = int(input_id_str)
+                output_id = recipe["result"]
+                smelt_time = recipe["smelt_time"]
+
+                SMELT_RECIPES[input_id] = {
+                    "result": output_id,
+                    "smelt_time": smelt_time
+                }
 
     for filename in os.listdir(os.path.join(BASE_DIR, "recipes", "inventory_crafting_table")):
         if filename.endswith(".json"):
@@ -492,9 +510,6 @@ try:
         50: 5  # Stick
     }
 
-    SMELT_RECIPES = {
-        49: {"result": 15, "smelt_time": 8},  # Sand -> Glass
-    }
     furnaces = [] # {"x": int, "y": int, "fuel": [id, count], "input": [id, count], "output": [id, count], "burn_time": float, "smelt_progress": float}
 
     loot_counts = {item_id: 0 for item_id in rarities}
