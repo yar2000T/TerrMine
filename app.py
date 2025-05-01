@@ -642,14 +642,17 @@ try:
             show_progress(screen, font, "Placing trees", 40)
 
         for y in range(ROWS):
-            world[y][0][0] = 100  # Left wall
-            world[y][COLS - 1][0] = 100  # Right wall
+            world[y][0][0] = 0
+            world[y][0][1] = 3  # Special collision layer
+            world[y][COLS - 1][0] = 0
+            world[y][COLS - 1][1] = 3  # Special collision layer
 
         for x in range(COLS):
-            world[ROWS - 1][x][0] = 100  # Bottom wall
-            world[10][x][0] = 100  # Top wall
+            world[ROWS - 1][x][0] = 100
+            world[10][x][0] = 0
+            world[10][x][1] = 3
 
-        # ---------- 3. Generate Ores ----------
+            # ---------- 3. Generate Ores ----------
         ore_total = len(ores)
         for oi, ore in enumerate(ores):
             for y in range(ore["min_y"], ore["max_y"]):
@@ -2420,7 +2423,7 @@ try:
                         if tile in textures and tile != 13:
                             if world[y][x][1] == 1 or world[y][x][0] == 55:
                                 screen.blit(textures[tile], block_rect)
-                            else:
+                            elif world[y][x][1] != 3:
                                 screen.blit(grayscale_textures[tile], block_rect)
 
                             key = (x, y)
@@ -2432,7 +2435,7 @@ try:
 
                     if not NoClip:
                         if not block_rect.x in nearby_blocks and not block_rect.x in nearby_blocks:
-                            if tile not in [100500, 11, 12, 29, 30] and world[y][x][1] == 1:
+                            if tile not in [100500, 11, 12, 29, 30] and world[y][x][1] in [1,3]:
                                 if tile == 54:
                                     trapdoor_rect = pygame.Rect(
                                         block_rect.x,
@@ -2482,8 +2485,7 @@ try:
 
                     if not NoClip:
                         if not block_rect.x in nearby_blocks and not block_rect.x in nearby_blocks:
-                            if player.colliderect(block_rect) and tile not in [100500, 11, 12, 29, 30] and world[y][x][
-                                1] == 1:
+                            if player.colliderect(block_rect) and tile not in [100500, 11, 12, 29, 30] and world[y][x][1] in [1, 3]:
                                 if player_movement[0] > 0:
                                     player.right = block_rect.left
                                 elif player_movement[0] < 0:
