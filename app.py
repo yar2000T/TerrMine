@@ -648,35 +648,35 @@ try:
             world[10][x][0] = 100  # Top wall
 
         # ---------- 3. Generate Ores ----------
-        # ore_total = len(ores)
-        # for oi, ore in enumerate(ores):
-        #     for y in range(ore["min_y"], ore["max_y"]):
-        #         for x in range(1, COLS - 1):
-        #             if world[y][x][0] == 3 and rng.random() < ore["chance"]:
-        #                 for _ in range(ore["cluster"]):
-        #                     dx = x + rng.randint(-1, 1)
-        #                     dy = y + rng.randint(-1, 1)
-        #                     if 0 <= dx < COLS and 0 <= dy < ROWS and world[dy][dx][0] == 3:
-        #                         world[dy][dx][0] = ore["id"]
-        #     if screen:
-        #         progress = 40 + int(((oi + 1) / ore_total) * 30)
-        #         show_progress(screen, font, "Generating ores", progress)
-        #
-        # ground_dict = dict(ground_positions)
-        #
-        # # ---------- 4. Generate Caves ----------
-        # for y in range(100, ROWS - 1):
-        #     for x in range(1, COLS - 1):
-        #         ground_y = ground_dict.get(x, ground_level)
-        #         if y > ground_y + 3:
-        #             nx = x / cave_scale
-        #             ny = y / cave_scale
-        #             value = cave_noise([nx, ny])
-        #             if value < cave_threshold:
-        #                 world[y][x][0] = 100500
-        #     if screen and y % 10 == 0:
-        #         progress = 70 + int(((y - 100) / (ROWS - 101)) * 30)
-        #         show_progress(screen, font, "Carving caves", min(progress, 99))
+        ore_total = len(ores)
+        for oi, ore in enumerate(ores):
+            for y in range(ore["min_y"], ore["max_y"]):
+                for x in range(1, COLS - 1):
+                    if world[y][x][0] == 3 and rng.random() < ore["chance"]:
+                        for _ in range(ore["cluster"]):
+                            dx = x + rng.randint(-1, 1)
+                            dy = y + rng.randint(-1, 1)
+                            if 0 <= dx < COLS and 0 <= dy < ROWS and world[dy][dx][0] == 3:
+                                world[dy][dx][0] = ore["id"]
+            if screen:
+                progress = 40 + int(((oi + 1) / ore_total) * 30)
+                show_progress(screen, font, "Generating ores", progress)
+
+        ground_dict = dict(ground_positions)
+
+        # ---------- 4. Generate Caves ----------
+        for y in range(100, ROWS - 1):
+            for x in range(1, COLS - 1):
+                ground_y = ground_dict.get(x, ground_level)
+                if y > ground_y + 3:
+                    nx = x / cave_scale
+                    ny = y / cave_scale
+                    value = cave_noise([nx, ny])
+                    if value < cave_threshold:
+                        world[y][x][0] = 100500
+            if screen and y % 10 == 0:
+                progress = 70 + int(((y - 100) / (ROWS - 101)) * 30)
+                show_progress(screen, font, "Carving caves", min(progress, 99))
 
         # ---------- 5. Place Structure in Stone Layer ----------
         structure = [
