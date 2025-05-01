@@ -1148,7 +1148,7 @@ try:
         def main_menu(self):
             global PAUSED, running, MENU
             save_map(world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL,
-                     inventory_chest, chests, inventory.items)
+                     inventory_chest, chests, inventory.items, furnaces)
             PAUSED = False
             running = False
             MENU = True
@@ -1156,7 +1156,7 @@ try:
         def exit_game(self):
             global running
             save_map(world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL,
-                     inventory_chest, chests, inventory.items)
+                     inventory_chest, chests, inventory.items, furnaces)
             running = False
 
         def draw(self, screen):
@@ -1315,7 +1315,7 @@ try:
 
 
     def save_map(world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL, inventory_chest,
-                 chests, inventory_items):
+                 chests, inventory_items, furnaces):
         global world_name
         if not os.path.exists("saves"):
             os.makedirs("saves")
@@ -1333,11 +1333,11 @@ try:
             pickle.dump(
                 (world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y,
                  player_world_x, player_world_y, SURVIVAL, inventory_chest, chests,
-                 inventory_items, world_name), file)
+                 inventory_items, furnaces, world_name), file)
 
 
     def load_world(filepath):
-        global world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL, inventory_chest, chests, inventory, world_name
+        global world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL, inventory_chest, chests, inventory, world_name, furnaces
 
         inventory = Inventory()
 
@@ -1346,6 +1346,8 @@ try:
                 data = pickle.load(file)
                 print(f"Loading {filepath}...")
 
+                if len(data) == 15:
+                    world, torches, private_blocks, homes, GameMode, saved_scroll_x, saved_scroll_y, player_world_x, player_world_y, SURVIVAL, inventory_chest, chests, inventory.items, furnaces, world_name = data
                 if len(data) == 14:
                     world, torches, private_blocks, homes, GameMode, saved_scroll_x, saved_scroll_y, player_world_x, player_world_y, SURVIVAL, inventory_chest, chests, inventory.items, world_name = data
                 elif len(data) == 13:
