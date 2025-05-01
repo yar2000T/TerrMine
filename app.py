@@ -316,8 +316,10 @@ try:
                                    (TILE_SIZE, TILE_SIZE)),
         53: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\furnace\\furnace_front_off.png")).convert(screen),
                                    (TILE_SIZE, TILE_SIZE)),
-        54: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\furnace\\furnace_front_on.png")).convert(screen),
+        54: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\trapdoor\\closed.png")).convert_alpha(screen),
                                    (TILE_SIZE, TILE_SIZE)),
+        55: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\trapdoor\\opened.png")).convert_alpha(screen),
+                                        (TILE_SIZE, TILE_SIZE)),
         100: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\bedrock.png")).convert(screen),
                                     (TILE_SIZE, TILE_SIZE)),
     }
@@ -856,7 +858,7 @@ try:
     class Inventory:
         def __init__(self):
             if not SURVIVAL:
-                self.items = [[1, 1], [2, 1], [3, 1], [47, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1],
+                self.items = [[54, 1], [1, 1], [2, 1], [3, 1], [47, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1],
                               [9, 1], [16, 1], [17, 1], [18, 1], [19, 1], [10, 1], [11, 1], [12, 1],
                               [13, 1], [14, 1], [15, 1], [20, 1], [21, 1], [22, 1], [23, 1], [24, 1],
                               [25, 1], [26, 1], [29, 1], [30, 1], [31, 1], [32, 1], [33, 1], [34, 1],
@@ -2080,6 +2082,13 @@ try:
                                 can_place = False
                                 break
 
+                        if world[world_y][world_x][0] == 54:
+                            world[world_y][world_x][1] = 2
+                            world[world_y][world_x][0] = 55
+                        elif world[world_y][world_x][0] == 55:
+                            world[world_y][world_x][1] = 1
+                            world[world_y][world_x][0] = 54
+
                         try:
                             if block_nearby and world[world_y][world_x][0] in [0, 100500]:
                                 if not block_to_place in [38, 39, 40, 41, 42, 43, 44, 48, 50]:
@@ -2113,7 +2122,10 @@ try:
 
                                     if block_to_place != 13:
                                         world[world_y][world_x][0] = block_to_place
-                                        world[world_y][world_x][1] = ActiveLayer
+                                        if block_to_place != 54:
+                                            world[world_y][world_x][1] = ActiveLayer
+                                        else:
+                                            world[world_y][world_x][1] = 1
 
                                     if SURVIVAL and block_to_place not in [0, 100500]:
                                         inventory.delete_block(block_to_place)
@@ -2406,7 +2418,7 @@ try:
 
                     if is_exposed or in_light_radius:
                         if tile in textures and tile != 13:
-                            if world[y][x][1] == 1:
+                            if world[y][x][1] == 1 or world[y][x][0] == 55:
                                 screen.blit(textures[tile], block_rect)
                             else:
                                 screen.blit(grayscale_textures[tile], block_rect)
@@ -2420,24 +2432,40 @@ try:
 
                     if not NoClip:
                         if not block_rect.x in nearby_blocks and not block_rect.x in nearby_blocks:
-                            if player.colliderect(block_rect) and tile not in [100500, 11, 12, 29, 30] and world[y][x][
-                                1] == 1:
-                                if player_movement[1] > 0:
-                                    player.bottom = block_rect.top
-                                    player_vel_y = 0
-                                    if not grounded:
-                                        if SURVIVAL:
-                                            if time.time() - IMMNUNE_TIMER > 0:
-                                                if fall_distance // TILE_SIZE > 5:
-                                                    damage = int((fall_distance // TILE_SIZE - 6) * 1)
-                                                    stats.health = max(0, stats.health - damage)
-                                                    # console.history.append(f"Fall Damage! Lost {damage} HP. Current HP: {stats.health}")
+                            if tile not in [100500, 11, 12, 29, 30] and world[y][x][1] == 1:
+                                if tile == 54:
+                                    trapdoor_rect = pygame.Rect(
+                                        block_rect.x,
+                                        block_rect.y,
+                                        TILE_SIZE,
+                                        10
+                                    )
+                                    if player.colliderect(trapdoor_rect):
+                                        if player_movement[1] > 0:
+                                            player.bottom = trapdoor_rect.top
+                                            player_vel_y = 0
+                                            grounded = True
+                                        elif player_movement[1] < 0:
+                                            player.top = trapdoor_rect.bottom
+                                            player_vel_y = 0
+                                        elif player_movement[0] > 0:
+                                            player.right = trapdoor_rect.left
+                                        elif player_movement[0] < 0:
+                                            player.left = trapdoor_rect.right
+                                else:
+                                    if player.colliderect(block_rect):
+                                        if player_movement[1] > 0:
+                                            player.bottom = block_rect.top
+                                            player_vel_y = 0
+                                            grounded = True
+                                        elif player_movement[1] < 0:
+                                            player.top = block_rect.bottom
+                                            player_vel_y = 0
+                                        elif player_movement[0] > 0:
+                                            player.right = block_rect.left
+                                        elif player_movement[0] < 0:
+                                            player.left = block_rect.right
 
-                                        fall_distance = 0
-                                    grounded = True
-                                elif player_movement[1] < 0:
-                                    player.top = block_rect.bottom
-                                    player_vel_y = 0
                 except IndexError:
                     pass
 
