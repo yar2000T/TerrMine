@@ -107,6 +107,9 @@ try:
     selected_item = None
     PAUSED = False
     world_name = ""
+    FPS = 60
+    FURNACE_OPEN = False
+    current_open_furnace = None
 
     INVENTORY_CRAFTING_RECIPES = {
     }
@@ -293,6 +296,10 @@ try:
             (TILE_SIZE, TILE_SIZE)),
         52: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\chest.png")).convert(screen),
                                    (TILE_SIZE, TILE_SIZE)),
+        53: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\furnace\\furnace_front_off.png")).convert(screen),
+                                   (TILE_SIZE, TILE_SIZE)),
+        54: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\furnace\\furnace_front_on.png")).convert(screen),
+                                   (TILE_SIZE, TILE_SIZE)),
         100: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\bedrock.png")).convert(screen),
                                     (TILE_SIZE, TILE_SIZE)),
     }
@@ -329,6 +336,92 @@ try:
             pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_9.png")).convert_alpha(screen),
             (TILE_SIZE, TILE_SIZE)),
     ]
+
+    fire_stages = [
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_1.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_2.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_3.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_4.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_5.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_6.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_7.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_8.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_9.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_10.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_11.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_12.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_13.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+        pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_14.png")).convert_alpha(
+                screen),
+            (TILE_SIZE, TILE_SIZE)),
+    ]
+
+    arrow_stages = [
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_1.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_2.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_3.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_4.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_5.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_6.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_7.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_8.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_9.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_10.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_11.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_12.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_13.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_14.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_15.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_16.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_17.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_18.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_19.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_20.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_21.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_22.png")).convert_alpha(screen),
+        pygame.image.load(os.path.join(BASE_DIR, "assets\\arrow_stages\\arrow_stage_23.png")).convert_alpha(screen),
+    ]
+
 
     block_hardness = {
         1: 0.5,   # Dirt
@@ -408,6 +501,17 @@ try:
         30: {"rarity": 0.15, "max_count": 3},  # Brown Mushroom
         13: {"rarity": 0.05, "max_count": 1},  # TNT
     }
+
+    FUEL_BURN_TIMES = {
+        7: 10,  # Oak Planks
+        44: 40,  # Coal
+        50: 5  # Stick
+    }
+
+    SMELT_RECIPES = {
+        49: {"result": 15, "smelt_time": 8},  # Sand -> Glass
+    }
+    furnaces = [] #{"x": int, "y": int, "fuel": [id, count], "input": [id, count], "output": [id, count], "burn_time": float, "smelt_progress": float}
 
     loot_counts = {item_id: 0 for item_id in rarities}
 
@@ -755,11 +859,12 @@ try:
     class Inventory:
         def __init__(self):
             if not SURVIVAL:
-                self.items = [[52, 1], [1, 1], [2, 1], [3, 1], [47, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1],
+                self.items = [[1, 1], [2, 1], [3, 1], [47, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1],
                               [9, 1], [16, 1], [17, 1], [18, 1], [19, 1], [10, 1], [11, 1], [12, 1],
                               [13, 1], [14, 1], [15, 1], [20, 1], [21, 1], [22, 1], [23, 1], [24, 1],
                               [25, 1], [26, 1], [29, 1], [30, 1], [31, 1], [32, 1], [33, 1], [34, 1],
-                              [35, 1], [36, 1], [37, 1], [45, 1], [46, 1], [49, 1], [51, 1], [0, 1]]
+                              [35, 1], [36, 1], [37, 1], [45, 1], [46, 1], [49, 1], [51, 1], [52, 1],
+                              [53, 1], [0, 1]]
 
                 self.max_items = len(self.items)
             else:
@@ -1422,6 +1527,89 @@ try:
         )
 
 
+    def update_furnaces():
+        global FPS
+        for furnace in furnaces:
+            if furnace["burn_time"] > 0:
+                furnace["burn_time"] -= 1 / FPS
+                if furnace["input"] and furnace["input"][0] in SMELT_RECIPES:
+                    recipe = SMELT_RECIPES[furnace["input"][0]]
+                    furnace["smelt_progress"] += 1 / FPS
+                    if furnace["smelt_progress"] >= recipe["smelt_time"]:
+                        furnace["input"][1] -= 1
+                        if furnace["input"][1] <= 0:
+                            furnace["input"] = None
+                        if furnace["output"] is None or furnace["output"][0] == recipe["result"]:
+                            if furnace["output"]:
+                                furnace["output"][1] += 1
+                            else:
+                                furnace["output"] = [recipe["result"], 1]
+                        furnace["smelt_progress"] = 0
+            elif furnace["fuel"]:
+                fuel_id = furnace["fuel"][0]
+                if fuel_id in FUEL_BURN_TIMES:
+                    furnace["burn_time"] = FUEL_BURN_TIMES[fuel_id]
+                    furnace["fuel"][1] -= 1
+                    if furnace["fuel"][1] <= 0:
+                        furnace["fuel"] = None
+
+
+    def draw_furnace_ui(screen, furnace):
+        ui_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 75, 300, 150)
+        pygame.draw.rect(screen, (50, 50, 50), ui_rect)
+        pygame.draw.rect(screen, WHITE, ui_rect, 2)
+
+        input_rect = pygame.Rect(ui_rect.x + 20, ui_rect.y + 50, TILE_SIZE, TILE_SIZE)
+        pygame.draw.rect(screen, (80, 80, 80), input_rect)
+        pygame.draw.rect(screen, WHITE, input_rect, 2)
+        if furnace["input"]:
+            screen.blit(textures[furnace["input"][0]], input_rect.topleft)
+            qty_text = font1_.render(str(furnace["input"][1]), True, WHITE)
+            screen.blit(qty_text, (input_rect.right - 12, input_rect.bottom - 18))
+
+        fuel_rect = pygame.Rect(ui_rect.x + 20, ui_rect.y + 100, TILE_SIZE, TILE_SIZE)
+        pygame.draw.rect(screen, (80, 80, 80), fuel_rect)
+        pygame.draw.rect(screen, WHITE, fuel_rect, 2)
+        if furnace["fuel"]:
+            screen.blit(textures[furnace["fuel"][0]], fuel_rect.topleft)
+            qty_text = font1_.render(str(furnace["fuel"][1]), True, WHITE)
+            screen.blit(qty_text, (fuel_rect.right - 12, fuel_rect.bottom - 18))
+
+        output_rect = pygame.Rect(ui_rect.x + 240, ui_rect.y + 75, TILE_SIZE, TILE_SIZE)
+        pygame.draw.rect(screen, (80, 80, 80), output_rect)
+        pygame.draw.rect(screen, WHITE, output_rect, 2)
+        if furnace["output"]:
+            screen.blit(textures[furnace["output"][0]], output_rect.topleft)
+            qty_text = font1_.render(str(furnace["output"][1]), True, WHITE)
+            screen.blit(qty_text, (output_rect.right - 12, output_rect.bottom - 18))
+
+        arrow_x = ui_rect.x + 80
+        arrow_y = ui_rect.y + 65
+        screen.blit(arrow, (arrow_x, arrow_y))
+
+        if furnace["input"] and furnace["burn_time"] > 0:
+            recipe = SMELT_RECIPES.get(furnace["input"][0])
+            if recipe:
+                progress = furnace["smelt_progress"] / recipe["smelt_time"]
+                bar_width = int(arrow.get_width() * min(progress, 1.0))
+                bar = pygame.Surface((bar_width, arrow.get_height()), pygame.SRCALPHA)
+                bar.fill((255, 255, 0, 180))
+                screen.blit(bar, (arrow_x, arrow_y))
+
+        if furnace["burn_time"] > 0:
+            burn_percent = furnace["burn_time"] / FUEL_BURN_TIMES.get(furnace["fuel"][0], 1)
+            stage_index = int((1 - burn_percent) * (len(fire_stages) - 1))
+            fire_img = fire_stages[stage_index]
+            screen.blit(fire_img, (ui_rect.x + 20, ui_rect.y + 10))
+
+        if dragging_item and dragging_pos:
+            screen.blit(textures[dragging_item[0]],
+                        (dragging_pos[0] - TILE_SIZE // 2, dragging_pos[1] - TILE_SIZE // 2))
+            if dragging_item[1] > 1:
+                qty_text = font1_.render(str(dragging_item[1]), True, WHITE)
+                screen.blit(qty_text, (dragging_pos[0] + 5, dragging_pos[1] + 5))
+
+
     set_system_resolution(RESOLUTION[0], RESOLUTION[1])
     screen = pygame.display.set_mode(
         RESOLUTION,
@@ -1464,6 +1652,7 @@ try:
 
         fog_surface.fill((0, 0, 0, 0))
         screen.fill(BLUE)
+        update_furnaces()
 
         # fog_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         # fog_surface.fill(FOG_COLOR)
@@ -1481,6 +1670,9 @@ try:
                     current_open_chest = None
                 elif event.key == pygame.K_BACKQUOTE:
                     console.toggle()
+                elif event.key == pygame.K_ESCAPE and FURNACE_OPEN:
+                    FURNACE_OPEN = False
+                    current_open_furnace = None
                 elif event.key == pygame.K_e and trigger_key() and not console.is_open:
                     INVENTORY_CRAFTING_OPENED = not INVENTORY_CRAFTING_OPENED
                     CRAFTING_OPEN = False
@@ -1536,6 +1728,13 @@ try:
                                     current_open_chest = chest
                                     break
                             continue
+                        elif world[world_y][world_x][0] == 53:
+                            for furnace in furnaces:
+                                if furnace["x"] == world_x and furnace["y"] == world_y and furnace["layer"] == ActiveLayer:
+                                    current_open_furnace = furnace
+                                    FURNACE_OPEN = True
+                                    break
+                            continue
 
                     if CRAFTING_OPEN and event.button == 1:
                         mx, my = pygame.mouse.get_pos()
@@ -1568,6 +1767,93 @@ try:
                             inventory.append_new_item(block_id, amount)
                             CRAFTING_GRID[:] = [[None for _ in range(3)] for _ in range(3)]
                             CRAFTING_OUTPUT = None
+
+                    if FURNACE_OPEN and current_open_furnace and event.type == pygame.MOUSEBUTTONDOWN:
+                        mx, my = pygame.mouse.get_pos()
+                        fx = SCREEN_WIDTH // 2 - 150
+                        fy = SCREEN_HEIGHT // 2 - 75
+
+                        input_rect = pygame.Rect(fx + 20, fy + 50, TILE_SIZE, TILE_SIZE)
+                        fuel_rect = pygame.Rect(fx + 20, fy + 100, TILE_SIZE, TILE_SIZE)
+                        output_rect = pygame.Rect(fx + 240, fy + 75, TILE_SIZE, TILE_SIZE)
+
+                        furnace = current_open_furnace
+
+                        # Output slot (take only)
+                        if output_rect.collidepoint(mx, my):
+                            if dragging_item is None and furnace["output"]:
+                                dragging_item = furnace["output"]
+                                furnace["output"] = None
+
+                        # Input slot
+                        elif input_rect.collidepoint(mx, my):
+                            if dragging_item:
+                                if dragging_item[0] in SMELT_RECIPES:  # Only allow smeltable items
+                                    if furnace["input"] is None:
+                                        furnace["input"] = [dragging_item[0], dragging_item[1]]
+                                        dragging_item = None
+                                    elif furnace["input"][0] == dragging_item[0]:
+                                        total = furnace["input"][1] + dragging_item[1]
+                                        transfer = min(64 - furnace["input"][1], dragging_item[1])
+                                        furnace["input"][1] += transfer
+                                        dragging_item[1] -= transfer
+                                        if dragging_item[1] <= 0:
+                                            dragging_item = None
+                            else:
+                                if furnace["input"]:
+                                    dragging_item = [furnace["input"][0], furnace["input"][1]]
+                                    furnace["input"] = None
+
+                        # Fuel slot
+                        elif fuel_rect.collidepoint(mx, my):
+                            if dragging_item:
+                                if dragging_item[0] in FUEL_BURN_TIMES:
+                                    if furnace["fuel"] is None:
+                                        furnace["fuel"] = [dragging_item[0], dragging_item[1]]
+                                        dragging_item = None
+                                    elif furnace["fuel"][0] == dragging_item[0]:
+                                        total = furnace["fuel"][1] + dragging_item[1]
+                                        transfer = min(64 - furnace["fuel"][1], dragging_item[1])
+                                        furnace["fuel"][1] += transfer
+                                        dragging_item[1] -= transfer
+                                        if dragging_item[1] <= 0:
+                                            dragging_item = None
+                            else:
+                                if furnace["fuel"]:
+                                    dragging_item = [furnace["fuel"][0], furnace["fuel"][1]]
+                                    furnace["fuel"] = None
+
+                        # Inventory slots
+                        visible_items = inventory.items[
+                                        inventory.scroll_index:inventory.scroll_index + max_items_per_row]
+                        inventory_y = SCREEN_HEIGHT - TILE_SIZE - 30
+                        inventory_x = SCREEN_WIDTH // 2 - (len(visible_items) * TILE_SIZE) // 2
+
+                        for i, item in enumerate(visible_items):
+                            index = inventory.scroll_index + i
+                            slot_rect = pygame.Rect(
+                                inventory_x + i * TILE_SIZE,
+                                inventory_y,
+                                TILE_SIZE,
+                                TILE_SIZE
+                            )
+                            if slot_rect.collidepoint(mx, my):
+                                if dragging_item is None:
+                                    if inventory.items[index][0] != 0:
+                                        dragging_item = [inventory.items[index][0], inventory.items[index][1]]
+                                        inventory.items[index] = [0, 0]
+                                else:
+                                    if inventory.items[index][0] == 0:
+                                        inventory.items[index] = [dragging_item[0], dragging_item[1]]
+                                        dragging_item = None
+                                    elif inventory.items[index][0] == dragging_item[0]:
+                                        total = inventory.items[index][1] + dragging_item[1]
+                                        if total <= 64:
+                                            inventory.items[index][1] = total
+                                            dragging_item = None
+                                        else:
+                                            inventory.items[index][1] = 64
+                                            dragging_item[1] = total - 64
 
                     elif event.type == pygame.MOUSEBUTTONDOWN and inventory_open:
                         mx, my = pygame.mouse.get_pos()
@@ -1814,6 +2100,18 @@ try:
                                             "items": [[0, 0] for _ in range(18)]
                                         })
 
+                                    if block_to_place == 53:
+                                        furnaces.append({
+                                            "x": world_x,
+                                            "y": world_y,
+                                            "layer": ActiveLayer,
+                                            "fuel": None,
+                                            "input": None,
+                                            "output": None,
+                                            "burn_time": 0,
+                                            "smelt_progress": 0
+                                        })
+
                                     if block_to_place != 13:
                                         world[world_y][world_x][0] = block_to_place
                                         world[world_y][world_x][1] = ActiveLayer
@@ -1925,6 +2223,14 @@ try:
                         dragging_item = None
                         dragging_from_inventory = False
                         dragging_from_grid = False
+
+                    elif event.type == pygame.MOUSEBUTTONUP and dragging_item is not None:
+                        if FURNACE_OPEN:
+                            if (not input_rect.collidepoint(event.pos) and
+                                    not fuel_rect.collidepoint(event.pos) and
+                                    not output_rect.collidepoint(event.pos)):
+                                inventory.append_new_item(dragging_item[0], dragging_item[1])
+                                dragging_item = None
 
                 elif event.type == pygame.MOUSEMOTION and dragging_item is not None:
                     dragging_pos = event.pos
@@ -2455,6 +2761,9 @@ try:
             for i, line in enumerate(debug_lines):
                 text_surf = debug_font.render(line, True, (255, 255, 255))
                 screen.blit(text_surf, (10, 10 + i * 20))
+
+        if FURNACE_OPEN and current_open_furnace:
+            draw_furnace_ui(screen, current_open_furnace)
 
         if PAUSED:
             pause_menu.draw(screen)
