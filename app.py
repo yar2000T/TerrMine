@@ -12,6 +12,11 @@ import json
 import sys
 import os
 
+
+import modules.textures
+import modules.sounds
+import modules.blocks_info
+
 if getattr(sys, 'frozen', False):
     BASE_DIR = sys._MEIPASS
 else:
@@ -164,277 +169,31 @@ try:
     pygame.display.set_caption("TerrMine")
 
     font1 = pygame.font.Font(os.path.join(BASE_DIR, "assets\\font\\Minecraftchmc-dBlX.ttf"), 50)
-    font1_ = pygame.font.Font(os.path.join(BASE_DIR, "assets\\font\\Minecraftchmc-dBlX.ttf"), 20)
+    font1_ = pygame.font.Font(os.path.join(BASE_DIR, 'assets\\font\\Minecraftchmc-dBlX.ttf'), 20)
     layer_font = pygame.font.Font(os.path.join(BASE_DIR, "assets\\font\\Minecraftchmc-dBlX.ttf"), 30)
     font2 = pygame.font.Font(os.path.join(BASE_DIR, "assets\\font\\MinecraftTen-VGORe.ttf"), 100)
 
-    menu_background = pygame.image.load(os.path.join(BASE_DIR, "assets\\menu_background.png"))
-    menu_background2 = pygame.image.load(os.path.join(BASE_DIR, "assets\\menu_background2.png"))
+    menu_background = None
+    menu_background2 = None
+    player_textures = {}
+    textures = {}
+    destruction_textures = []
+    arrow_stages = []
+    fire_stages = []
+    dead = None
+    grayscale_textures = {}
+    crosshair = None
+    shield = None
+    explosion_sound = None
+    explosion_img = None
+    block_hardness = {}
+    ores = []
+    rarities = {}
 
-    player_textures = {
-        "idle": pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\player\\idle.png")).convert(screen),
-            (PLAYER_SIZE, PLAYER_SIZE)),
-        "jump": pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\player\\jump.png")).convert(screen),
-            (PLAYER_SIZE, PLAYER_SIZE)),
-        "down": pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\player\\down.png")).convert(screen),
-            (PLAYER_SIZE, PLAYER_SIZE)),
-        "walk-1": pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\player\\walk-1.png")).convert(screen),
-            (PLAYER_SIZE, PLAYER_SIZE)),
-        "walk-2": pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\player\\walk-2.png")).convert(screen),
-            (PLAYER_SIZE, PLAYER_SIZE)),
-        "walk-3": pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\player\\walk-3.png")).convert(screen),
-            (PLAYER_SIZE, PLAYER_SIZE)),
-        "walk-4": pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\player\\walk-4.png")).convert(screen),
-            (PLAYER_SIZE, PLAYER_SIZE)),
-    }
+    modules.textures.load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_HEIGHT, globals())
+    modules.sounds.load(pygame, BASE_DIR, globals())
+    modules.blocks_info.load(globals())
 
-    textures = {
-        1: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\dirt.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        2: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\grass.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        3: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\stone.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        4: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\brick.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        5: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\diamond.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        6: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\end_bricks.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        7: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\planks_oak.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        8: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\leaves_oak.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        9: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\log_oak.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        10: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\stonebrick.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        11: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\torch_on.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        12: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\ladder.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        13: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\tnt.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        14: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\private.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        15: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\glass.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        16: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\log_acacia.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        17: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\log_big_oak.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        18: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\log_birch.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        19: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\log_spruce.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        20: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\magma.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        21: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\mushroom_block_inside.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        22: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\mushroom_block_skin_red.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        23: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\mushroom_block_skin_brown.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        24: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\hay_block_side.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        25: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\crafting_table_front.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        26: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\pumpkin_face_off.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        27: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\debug.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        28: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\debug2.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        29: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\mushroom_red.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        30: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\mushroom_brown.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        31: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\diamond_ore.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        32: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\emerald_ore.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        33: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\gold_ore.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        34: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\iron_ore.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        35: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\nether_brick.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        36: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\redstone_ore.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        37: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\coal_ore.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        38: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\items\\diamond.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        39: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\items\\emerald.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        40: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\items\\gold_ingot.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        41: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\items\\iron_ingot.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        42: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\items\\netherbrick.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        43: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\items\\redstone_dust.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        44: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\items\\charcoal.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        45: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\coal_block.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        46: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\iron_block.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        47: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\cobblestone.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        48: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\items\\gunpowder.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        49: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\sand.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        50: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\items\\stick.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        51: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\cobblestone_mossy.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        52: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\chest.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        53: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\furnace\\furnace_front_off.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-        54: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\trapdoor\\closed.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        55: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\trapdoor\\opened.png")).convert_alpha(),(TILE_SIZE, TILE_SIZE)),
-        100: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\bedrock.png")).convert(),(TILE_SIZE, TILE_SIZE)),
-    }
-
-    destruction_textures = [
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_0.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_1.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_2.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_3.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_4.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_5.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_6.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_7.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_8.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\destroy_stages\\destroy_stage_9.png")).convert_alpha(screen),
-            (TILE_SIZE, TILE_SIZE)),
-    ]
-
-    fire_stages = [
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_1.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_2.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_3.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_4.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_5.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_6.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_7.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_8.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_9.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_10.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_11.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_12.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_13.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-        pygame.transform.scale(
-            pygame.image.load(os.path.join(BASE_DIR, "assets\\fire_stages\\fire_stage_14.png")).convert_alpha(
-                screen),
-            (TILE_SIZE, TILE_SIZE)),
-    ]
-
-    def load_and_scale(path, scale_factor):
-        image = pygame.image.load(path).convert_alpha(screen)
-        width, height = image.get_size()
-        return pygame.transform.smoothscale(image, (int(width * scale_factor), int(height * scale_factor)))
-
-
-    arrow_stages = [
-        load_and_scale(os.path.join(BASE_DIR, f"assets\\arrow_stages\\arrow_stage_{i}.png"), 1.8)
-        for i in range(1, 24)
-    ]
-
-    block_hardness = {
-        1: 0.5,   # Dirt
-        2: 0.6,   # Grass
-        3: 1.5,   # Stone
-        4: 2.0,   # Brick
-        5: 5.0,   # Diamond block
-        6: 3.0,   # End bricks
-        7: 1.0,   # Oak Planks
-        8: 0.2,   # Oak Leaves
-        9: 2.0,   # Oak Log
-        10: 2.0,  # Stone Brick
-        11: 0.1,  # Torch
-        12: 0.2,  # Ladder
-        13: 0.5,  # TNT
-        14: 1.0,  # Private
-        15: 0.3,  # Glass
-        16: 2.0,  # Acacia Log
-        17: 2.0,  # Big Oak Log
-        18: 2.0,  # Birch Log
-        19: 2.0,  # Spruce Log
-        20: 0.7,  # Magma
-        21: 0.2,  # Mushroom Block Inside
-        22: 0.2,  # Mushroom Red Skin
-        23: 0.2,  # Mushroom Brown Skin
-        24: 0.5,  # Hay Block
-        25: 2.5,  # Crafting Table
-        26: 1.0,  # Pumpkin
-        27: 0.1,  # Debug
-        28: 0.1,  # Debug 2
-        29: 0.2,  # Red Mushroom (item)
-        30: 0.2,  # Brown Mushroom (item)
-        31: 3.0,  # Diamond Ore
-        32: 3.0,  # Emerald Ore
-        33: 3.0,  # Gold Ore
-        34: 3.0,  # Iron Ore
-        35: 2.0,  # Nether Brick
-        36: 3.0,  # Redstone Ore
-        37: 2.5,  # Coal Ore
-        38: 0.0,  # Diamond (item)
-        39: 0.0,  # Emerald (item)
-        40: 0.0,  # Gold Ingot (item)
-        41: 0.0,  # Iron Ingot (item)
-        42: 0.0,  # Netherbrick (item)
-        43: 0.0,  # Redstone Dust (item)
-        44: 0.0,  # Charcoal (item)
-        45: 5.0,  # Coal Block
-        46: 5.0,  # Iron Block
-        47: 1.2,  # Cobblestone
-        48: 0.0,  # Gunpowder (item)
-        49: 0.0,  # Sand
-        50: 0.0,  # Stick (item)
-        51: 1.3,
-        100: 9999.0,  # Bedrock (unbreakable)
-    }
-
-    ores = [
-        {"id": 31, "min_y": 560, "max_y": 615, "chance": 0.002, "cluster": 3},  # Diamond: very rare, bottom 60 rows
-        {"id": 32, "min_y": 500, "max_y": 600, "chance": 0.003, "cluster": 3},  # Emerald: rare, also deep
-        {"id": 33, "min_y": 400, "max_y": 580, "chance": 0.006, "cluster": 4},  # Gold: mid-deep
-        {"id": 34, "min_y": 300, "max_y": 590, "chance": 0.005, "cluster": 5},  # Iron: common, wide range
-        {"id": 36, "min_y": 350, "max_y": 600, "chance": 0.008, "cluster": 5},  # Redstone: mid-deep
-        {"id": 37, "min_y": 100, "max_y": 580, "chance": 0.007, "cluster": 6},  # Coal: most common, large vertical range
-    ]
-
-    rarities = {
-        38: {"rarity": 0.02, "max_count": 1},  # Diamond (item)
-        39: {"rarity": 0.02, "max_count": 1},  # Emerald
-        40: {"rarity": 0.05, "max_count": 2},  # Gold Ingot
-        41: {"rarity": 0.06, "max_count": 3},  # Iron Ingot
-        42: {"rarity": 0.07, "max_count": 3},  # Netherbrick
-        43: {"rarity": 0.08, "max_count": 5},  # Redstone Dust
-        44: {"rarity": 0.08, "max_count": 5},  # Charcoal
-        48: {"rarity": 0.10, "max_count": 4},  # Gunpowder
-        50: {"rarity": 0.12, "max_count": 6},  # Stick
-        29: {"rarity": 0.15, "max_count": 3},  # Red Mushroom
-        30: {"rarity": 0.15, "max_count": 3},  # Brown Mushroom
-        13: {"rarity": 0.05, "max_count": 1},  # TNT
-    }
 
     FUEL_BURN_TIMES = {
         7: 10,  # Oak Planks
@@ -445,24 +204,6 @@ try:
     furnaces = [] # {"x": int, "y": int, "fuel": [id, count], "input": [id, count], "output": [id, count], "burn_time": float, "smelt_progress": float}
 
     loot_counts = {item_id: 0 for item_id in rarities}
-
-    dead = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\You died!.png")).convert_alpha(screen),
-                                  (SCREEN_WIDTH, SCREEN_HEIGHT))
-
-    grayscale_textures = {}
-    for tile, tex in textures.items():
-        gray = tex.copy()
-        overlay = pygame.Surface(tex.get_size(), pygame.SRCALPHA)
-        overlay.fill((180, 180, 180, 50))
-        gray.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-        grayscale_textures[tile] = gray
-
-    crosshair = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR,"assets\\crosshair.png")).convert_alpha(screen),
-                                       (TILE_SIZE, TILE_SIZE))
-    shield = pygame.image.load(os.path.join(BASE_DIR,"assets\\player\\shield.png")).convert_alpha(screen)
-
-    explosion_sound = pygame.mixer.Sound(os.path.join(BASE_DIR,"assets\\sound_effects\\explosion.mp3"))
-    explosion_img = pygame.image.load(os.path.join(BASE_DIR,"assets\\explosion.png")).convert_alpha()
 
     world = [[]]
     torches = []
