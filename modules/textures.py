@@ -265,7 +265,7 @@ def load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_
         overlay = pygame.Surface(tex.get_size(), pygame.SRCALPHA)
         overlay.fill((180, 180, 180, 50))
         gray.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-        globals['grayscale_textures[tile]'] = gray
+        globals['grayscale_textures'][tile] = gray
 
     globals['crosshair'] = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR,"assets\\crosshair.png")).convert_alpha(screen),
                                        (TILE_SIZE, TILE_SIZE))
