@@ -117,6 +117,8 @@ try:
     }
     SMELT_RECIPES = {
     }
+    seen_tiles = set()
+    visible_tiles = set()
 
     for filename in os.listdir(os.path.join(BASE_DIR, "recipes", "furnace")):
         if filename.endswith(".json"):
@@ -469,7 +471,7 @@ try:
     damage_tracker = {}
     player = pygame.Rect(SCREEN_WIDTH // 2 - TILE_SIZE // 2, SCREEN_HEIGHT // 2 - TILE_SIZE // 2, TILE_SIZE, TILE_SIZE)
     player.y = 140
-    scroll_x = 0
+    scroll_x = -6000
     scroll_y = -6000
     health = 10
     SURVIVAL = False
@@ -514,7 +516,7 @@ try:
 
         seed = sid
         noise = PerlinNoise(octaves=5, seed=sid)
-        world = [[[0, 1] for _ in range(COLS)] for _ in range(ROWS)]
+        world = [[[100500, 1] for _ in range(COLS + 30)] for _ in range(ROWS)]
         font = pygame.font.SysFont("Arial", 30)
 
         scale = 50
@@ -537,7 +539,7 @@ try:
             ground_positions.append((x, ground))
 
             for y in range(ground):
-                world[y][x][0] = 0
+                world[y][x][0] = 100500
             if ground < ROWS - 1:
                 world[ground][x][0] = 2
             for y in range(ground + 1, min(ground + 1 + dirt_thickness, ROWS - 1)):
@@ -561,7 +563,7 @@ try:
                     for lx in range(x - 2, x + 3):
                         if 0 <= ly < ROWS and 0 <= lx < COLS:
                             dist = ((lx - x) ** 2 + (ly - (ground - 5)) ** 2) ** 0.5
-                            if dist <= 2.5 and world[ly][lx][0] == 0:
+                            if dist <= 2.5 and world[ly][lx][0] == 100500:
                                 world[ly][lx][0] = 8
                                 world[ly][lx][1] = 1
                 last_tree_x = x
@@ -614,8 +616,8 @@ try:
         # ---------- 5. Place Structure in Stone Layer ----------
         structure = [
             [51, 51, 51, 51, 51, 51, 51, 51],
-            [51, 0, 0, 0, 0, 0, 0, 51],
-            [51, 0, 52, 0, 0, 52, 0, 51],
+            [51, 100500, 100500, 100500, 100500, 100500, 100500, 51],
+            [51, 100500, 52, 100500, 100500, 52, 100500, 51],
             [51, 51, 51, 51, 51, 51, 51, 51],
         ]
 
@@ -653,6 +655,13 @@ try:
 
         if screen:
             show_progress(screen, font, "Placing structure", 90)
+
+        for y in range(ROWS):
+            for x in range(15):
+                world[y][x][1] = 3
+
+            for x in range(COLS + 15, COLS + 20):
+                world[y][x][1] = 3
 
         if screen:
             show_progress(screen, font, "World generation complete!", 100)
@@ -1564,7 +1573,6 @@ try:
     last_cycle_timer = time.time()
     rotate = False
     dynamites = []
-    players = {}
     fall_distance = 0
     stats = PlayerStats()
     ActiveLayer = 1
@@ -2320,6 +2328,18 @@ try:
                 if dist < TILE_SIZE * 5:
                     nearby_blocks.add((x, y))
 
+        visible_tiles.clear()
+        vision_radius = 8
+        px, py = (player.x - scroll_x) // TILE_SIZE, (player.y - scroll_y) // TILE_SIZE
+
+        for dy in range(-vision_radius, vision_radius + 1):
+            for dx in range(-vision_radius, vision_radius + 1):
+                tx, ty = px + dx, py + dy
+                if 0 <= tx < COLS and 0 <= ty < ROWS:
+                    if dx ** 2 + dy ** 2 <= vision_radius ** 2:
+                        visible_tiles.add((tx, ty))
+                        seen_tiles.add((tx, ty))
+
         for y in range(start_y, end_y):
             for x in range(start_x, end_x):
                 try:
@@ -2329,37 +2349,40 @@ try:
 
                     block_rect = pygame.Rect(x * TILE_SIZE + scroll_x, y * TILE_SIZE + scroll_y, TILE_SIZE, TILE_SIZE)
                     block_x, block_y = block_rect.topleft
+                    key = (x, y)
 
-                    is_exposed = all(world[i][x][0] in [0, 100500] for i in range(y))
                     player_dist = math.dist((player.centerx, player.centery), (block_x, block_y))
-                    in_light_radius = dist <= LIGHT_RADIUS * TILE_SIZE
-
-                    if player_dist <= LIGHT_RADIUS * TILE_SIZE:
-                        in_light_radius = True
+                    in_light_radius = player_dist <= LIGHT_RADIUS * TILE_SIZE
 
                     for torch_x, torch_y, layer in torches:
                         torch_dist = math.dist(
                             (torch_x * TILE_SIZE + scroll_x, torch_y * TILE_SIZE + scroll_y),
                             (block_x, block_y)
                         )
-
                         if torch_dist <= LIGHT_RADIUS * TILE_SIZE:
                             in_light_radius = True
                             break
 
-                    if is_exposed or in_light_radius:
+                    if key in visible_tiles or in_light_radius:
                         if tile in textures and tile != 13:
-                            if world[y][x][1] == 1 or world[y][x][0] == 55:
+                            if (world[y][x][1] == 1 or world[y][x][1] == 3) or world[y][x][0] == 55:
                                 screen.blit(textures[tile], block_rect)
-                            elif world[y][x][1] != 3:
+                            else:
                                 screen.blit(grayscale_textures[tile], block_rect)
 
-                            key = (x, y)
                             if key in damage_tracker and damage_tracker[key] > 0:
                                 screen.blit(destruction_textures[round(damage_tracker[key] - 1)], block_rect)
 
-                    elif not is_exposed:
-                        pygame.draw.rect(fog_surface, FOG_COLOR, block_rect)
+                    elif key in seen_tiles:
+                        if tile in textures and tile != 13:
+                            dark_overlay = grayscale_textures[tile].copy()
+                            shadow = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                            shadow.fill((0, 0, 0, 120))
+                            dark_overlay.blit(shadow, (0, 0))
+                            screen.blit(dark_overlay, block_rect)
+
+                    else:
+                        pygame.draw.rect(screen, (0, 0, 0), block_rect)
 
                     if not NoClip:
                         if not block_rect.x in nearby_blocks and not block_rect.x in nearby_blocks:
@@ -2406,14 +2429,19 @@ try:
             for x in range(start_x, end_x):
                 try:
                     tile = world[y][x][0]
-                    if tile == 0:
+                    if tile == 0 and world[y][x][1] != 3:
                         continue
 
                     block_rect = pygame.Rect(x * TILE_SIZE + scroll_x, y * TILE_SIZE + scroll_y, TILE_SIZE, TILE_SIZE)
 
                     if not NoClip:
                         if not block_rect.x in nearby_blocks and not block_rect.x in nearby_blocks:
-                            if player.colliderect(block_rect) and tile not in [100500, 11, 12, 29, 30] and world[y][x][1] in [1, 3]:
+                            if player.colliderect(block_rect) and world[y][x][1] == 1 and tile not in [100500, 11, 12, 29, 30]:
+                                if player_movement[0] > 0:
+                                    player.right = block_rect.left
+                                elif player_movement[0] < 0:
+                                    player.left = block_rect.right
+                            elif player.colliderect(block_rect) and world[y][x][1] == 3:
                                 if player_movement[0] > 0:
                                     player.right = block_rect.left
                                 elif player_movement[0] < 0:
