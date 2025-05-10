@@ -1227,7 +1227,17 @@ try:
 
                     elif event.button != 1 and (
                             not INVENTORY_CRAFTING_OPENED or not CRAFTING_OPEN or not current_open_chest is None):
-                        if world_x == player_x and world_y == player_y:
+
+                        can_place_under_player = True
+                        for i in range(2):
+                            check_tile_x = (player.x + (20 if i == 1 else -20) - scroll_x) // TILE_SIZE
+                            check_tile_y = (player.y + player.height // 2 - scroll_y) // TILE_SIZE  # use center Y
+
+                            if world_x == check_tile_x and world_y == check_tile_y:
+                                can_place_under_player = False
+                                break
+
+                        if not can_place_under_player:
                             continue
 
                         distance = math.sqrt((world_x - player_x) ** 2 + (world_y - player_y) ** 2)
@@ -1238,16 +1248,13 @@ try:
                         block_to_place = inventory.get_selected_block()
 
                         block_nearby = False
-                        for dx in range(-1, 2):
-                            for dy in range(-1, 2):
-                                nx = world_x + dx
-                                ny = world_y + dy
-                                if 0 <= nx < COLS and 0 <= ny < ROWS:
-                                    if not world[ny][nx][0] in [0, 100500]:
-                                        block_nearby = True
-                                        break
-                            if block_nearby:
-                                break
+                        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # left, right, up, down
+                            nx = world_x + dx
+                            ny = world_y + dy
+                            if 0 <= nx < COLS and 0 <= ny < ROWS:
+                                if world[ny][nx][0] not in [0, 100500]:
+                                    block_nearby = True
+                                    break
 
                         can_place = True
                         for pb_x, pb_y, owner, layer in private_blocks:
