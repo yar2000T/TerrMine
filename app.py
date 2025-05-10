@@ -16,6 +16,8 @@ import os
 import modules.textures
 import modules.sounds
 import modules.blocks_info
+from modules.checks import *
+from modules.classes import *
 
 if getattr(sys, 'frozen', False):
     BASE_DIR = sys._MEIPASS
@@ -193,7 +195,7 @@ try:
     modules.textures.load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_HEIGHT, globals())
     modules.sounds.load(pygame, BASE_DIR, globals())
     modules.blocks_info.load(globals())
-
+    modules.classes.load(globals())
 
     FUEL_BURN_TIMES = {
         7: 10,  # Oak Planks
@@ -323,7 +325,7 @@ try:
             world[10][x][0] = 0
             world[10][x][1] = 3
 
-            # ---------- 3. Generate Ores ----------
+        # ---------- 3. Generate Ores ----------
         ore_total = len(ores)
         for oi, ore in enumerate(ores):
             for y in range(ore["min_y"], ore["max_y"]):
@@ -408,455 +410,6 @@ try:
             show_progress(screen, font, "World generation complete!", 100)
 
         return world
-
-
-    class Console:
-        def __init__(self):
-            self.is_open = False
-            self.input_text = ""
-            self.history = []
-            self.font = pygame.font.SysFont("consolas", 20)
-            self.max_history = 10
-
-        def toggle(self):
-            self.is_open = not self.is_open
-
-        def handle_event(self, event):
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_BACKSPACE:
-                    self.input_text = self.input_text[:-1]
-                elif event.key == pygame.K_RETURN:
-                    self.execute_command(self.input_text)
-                    self.input_text = ""
-                else:
-                    self.input_text += event.unicode
-
-        def execute_command(self, command):
-            self.history.append(command)
-            if len(self.history) > self.max_history:
-                self.history.pop(0)
-
-            command_parts = command.split()
-
-            if len(command_parts) > 0:
-                command_name = command_parts[0].lstrip("/").lstrip("//")
-
-                command_func = command_map.get(command_name)
-
-                if command_func:
-                    command_func(self, command_parts, globals())
-                else:
-                    self.history.append(f"Unknown command: {command_name}")
-
-        def draw(self, screen):
-            if not self.is_open:
-                return
-
-            console_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-            console_surface.fill((0, 0, 0, 150))
-
-            screen.blit(console_surface, (0, SCREEN_HEIGHT - SCREEN_HEIGHT))
-
-            input_surface = self.font.render(self.input_text, True, (255, 255, 255))
-            screen.blit(input_surface, (10, SCREEN_HEIGHT - 30))
-
-            for i, line in enumerate(reversed(self.history)):
-                history_surface = self.font.render(line, True, (200, 200, 200))
-                screen.blit(history_surface, (10, SCREEN_HEIGHT - 60 - i * 20))
-
-
-    class PlayerStats:
-        def __init__(self):
-            self.max_health = 10
-            self.health = self.max_health
-            self.fall_threshold = 10  # Damage starts after falling 10 units (adjust this value)
-            self.fall_damage_rate = 0.5  # 1 damage per block fallen
-            self.fall_distance = 0  # Track how far the player has fallen
-            self.is_falling = False
-
-            self.full_heart = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR,"assets\\heart\\full.png")).convert_alpha(screen),
-                                                     (14, 12))
-            self.half_heart = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR,"assets\\heart\\half.png")).convert_alpha(screen),
-                                                     (14, 12))
-            self.empty_heart = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR,"assets\\heart\\empty.png")).convert_alpha(screen),
-                                                      (14, 12))
-
-        def draw_hearts(self, screen):
-            heart_x = SCREEN_WIDTH * 0.5 - 200
-            heart_y = SCREEN_HEIGHT - 80
-
-            heart_spacing = 16
-
-            for i in range(self.max_health):
-                if self.health >= i + 1:
-                    screen.blit(self.full_heart, (heart_x, heart_y))
-                elif self.health > i:
-                    screen.blit(self.half_heart, (heart_x, heart_y))
-                else:
-                    screen.blit(self.empty_heart, (heart_x, heart_y))
-
-                heart_x += heart_spacing
-
-        def draw_ui(self, screen):
-            if SURVIVAL:
-                self.draw_hearts(screen)
-
-
-    class FakeButton:
-
-        def __init__(self, text, x, y, width, height):
-            self.text = text
-            self.rect = pygame.Rect(x, y, width, height)
-
-        def draw(self, screen):
-            pygame.draw.rect(screen, GRAY, self.rect, border_radius=10)
-            text_surf = font1.render(self.text, True, BLACK)
-            text_rect = text_surf.get_rect(center=self.rect.center)
-            screen.blit(text_surf, text_rect)
-
-        def check_click(self, pos):
-            pass
-
-
-    class Button:
-
-        def __init__(self, text, x, y, width, height, action):
-            self.text = text
-            self.rect = pygame.Rect(x, y, width, height)
-            self.action = action
-
-        def draw(self, screen):
-            pygame.draw.rect(screen, GRAY, self.rect, border_radius=10)
-            text_surf = font1.render(self.text, True, BLACK)
-            text_rect = text_surf.get_rect(center=self.rect.center)
-            screen.blit(text_surf, text_rect)
-
-        def check_click(self, pos):
-            if self.rect.collidepoint(pos):
-                self.action()
-
-
-    class Inventory:
-        def __init__(self):
-            if not SURVIVAL:
-                self.items = [[54, 1], [1, 1], [2, 1], [3, 1], [47, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1],
-                              [9, 1], [16, 1], [17, 1], [18, 1], [19, 1], [10, 1], [11, 1], [12, 1],
-                              [13, 1], [14, 1], [15, 1], [20, 1], [21, 1], [22, 1], [23, 1], [24, 1],
-                              [25, 1], [26, 1], [29, 1], [30, 1], [31, 1], [32, 1], [33, 1], [34, 1],
-                              [35, 1], [36, 1], [37, 1], [45, 1], [46, 1], [49, 1], [51, 1], [52, 1],
-                              [53, 1], [0, 1]]
-
-                self.max_items = len(self.items)
-            else:
-                self.items = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
-                self.max_items = 10
-
-            self.selected_index = 0
-            self.scroll_index = 0
-
-        def scroll(self, direction):
-            self.selected_index += direction
-            if self.selected_index < 0:
-                self.selected_index = len(self.items) - 1
-            elif self.selected_index >= len(self.items):
-                self.selected_index = 0
-
-            if len(self.items) > max_items_per_row:
-                if self.selected_index < self.scroll_index:
-                    self.scroll_index = self.selected_index
-                elif self.selected_index >= self.scroll_index + max_items_per_row:
-                    self.scroll_index = self.selected_index - max_items_per_row + 1
-
-        def get_selected_block(self):
-            return self.items[self.selected_index][0]
-
-        def append_new_item(self, block_id, amount=1):
-            MAX_STACK = 64
-
-            for i in range(len(self.items)):
-                slot_id, quantity = self.items[i]
-                if slot_id == block_id and quantity < MAX_STACK:
-                    space_left = MAX_STACK - quantity
-                    to_add = min(space_left, amount)
-                    self.items[i][1] += to_add
-                    amount -= to_add
-                    if amount <= 0:
-                        return
-
-            for i in range(len(self.items)):
-                slot_id, quantity = self.items[i]
-                if slot_id == 0:
-                    to_add = min(MAX_STACK, amount)
-                    self.items[i] = [block_id, to_add]
-                    amount -= to_add
-                    if amount <= 0:
-                        return
-
-            if len(self.items) < self.max_items:
-                to_add = min(MAX_STACK, amount)
-                self.items.append([block_id, to_add])
-                amount -= to_add
-                if amount <= 0:
-                    return
-
-            if amount > 0:
-                # print(f"Inventory full! Could not add {amount}x block ID {block_id}")
-                pass
-
-        def delete_block(self, block_id, amount=1):
-            for i in range(len(self.items)):
-                slot_id, quantity = self.items[i]
-                if slot_id == block_id:
-                    if quantity >= amount:
-                        self.items[i][1] -= amount
-                        if self.items[i][1] <= 0:
-                            self.items[i] = [0, 0]
-                        return True
-                    else:
-                        amount -= quantity
-                        self.items[i] = [0, 0]
-            return False
-
-        def has_block(self, block_id):
-            for slot_id, quantity in self.items:
-                if slot_id == block_id and quantity > 0:
-                    return True
-            return False
-
-
-    class Dynamite:
-        def __init__(self, x, y, countdown=3):
-            self.x = x
-            self.y = y
-            self.countdown = countdown
-            self.placed_time = None
-            self.exploded = False
-            self.explosion_time = None
-            self.blink_interval = 0.2
-            self.last_blink = time.time()
-            self.blink_state = False
-            self.falling = True
-
-        def update(self, world):
-            if self.exploded:
-                if self.explosion_time is not None and time.time() - self.explosion_time > 0.5:
-                    dynamites.remove(self)
-                return
-
-            if self.falling:
-                if self.y + 1 < ROWS and world[self.y + 1][self.x][0] in [0, 100500]:
-                    self.y += 1
-                else:
-                    self.falling = False
-                    self.placed_time = time.time()
-            else:
-                elapsed = time.time() - self.placed_time
-
-                if elapsed >= self.countdown - 1:
-                    if time.time() - self.last_blink >= self.blink_interval:
-                        self.blink_state = not self.blink_state
-                        self.last_blink = time.time()
-
-                if elapsed >= self.countdown:
-                    self.explode(world)
-
-        def explode(self, world):
-            explosion_sound.play()
-            explosion_radius = 3
-            cx, cy = self.x, self.y
-
-            for dx in range(-explosion_radius, explosion_radius + 1):
-                for dy in range(-explosion_radius, explosion_radius + 1):
-                    dist = math.sqrt(dx ** 2 + dy ** 2)
-                    if dist <= explosion_radius:
-                        nx, ny = cx + dx, cy + dy
-                        if 0 <= nx < COLS and 0 <= ny < ROWS:
-                            if world[ny][nx][0] != 100:
-                                world[ny][nx][0] = 100500
-
-                            for pb in private_blocks:
-                                pb_x, pb_y, owner, layer = pb
-                                if pb_x == nx and pb_y == ny:
-                                    private_blocks.remove(pb)
-                                    # console.history.append(f"Private block at ({nx}, {ny}) destroyed!")
-                                    break
-
-            self.exploded = True
-            self.explosion_time = time.time()
-
-        def draw(self, screen, textures):
-            if self.exploded:
-                screen.blit(explosion_img, ((self.x * TILE_SIZE + scroll_x) - explosion_img.get_width() // 2,
-                                            (self.y * TILE_SIZE + scroll_y) - explosion_img.get_height() // 2))
-            else:
-                tnt_texture = textures[13].copy()
-                if self.blink_state:
-                    tnt_texture.set_alpha(150)
-                    screen.blit(tnt_texture, (self.x * TILE_SIZE + scroll_x, self.y * TILE_SIZE + scroll_y))
-                else:
-                    screen.blit(textures[13], (self.x * TILE_SIZE + scroll_x, self.y * TILE_SIZE + scroll_y))
-
-
-    class InputBox:
-        def __init__(self, x, y, w, h, text=''):
-            self.rect = pygame.Rect(x, y, w, h)
-            self.color = pygame.Color('gray')
-            self.text = text
-            self.txt_surface = font1_.render(text, True, self.color)
-            self.active = False
-
-        def handle_event(self, event):
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.rect.collidepoint(event.pos):
-                    self.active = not self.active
-                else:
-                    self.active = False
-                self.color = pygame.Color('lightgray') if self.active else pygame.Color('gray')
-            if event.type == pygame.KEYDOWN:
-                if self.active:
-                    if event.key == pygame.K_RETURN:
-                        return self.text
-                    elif event.key == pygame.K_BACKSPACE:
-                        self.text = self.text[:-1]
-                    else:
-                        self.text += event.unicode
-                    self.txt_surface = font1_.render(self.text, True, pygame.Color('white'))
-            return None
-
-        def update(self):
-            width = max(200, self.txt_surface.get_width() + 10)
-            self.rect.w = width
-
-        def draw(self, screen):
-            pygame.draw.rect(screen, self.color, self.rect)
-            screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
-
-
-    class WorldSelectionMenu:
-        def __init__(self):
-            self.worlds = []
-            self.scroll_offset = 0
-            self.selected_world = None
-            self.load_button = Button("Load", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50, self.load_selected)
-            self.back_button = Button("Back", 50, 50, 100, 40, self.back)
-            self.refresh_worlds()
-
-        def refresh_worlds(self):
-            if not os.path.exists("saves"):
-                os.makedirs("saves")
-            self.worlds = [f for f in os.listdir("saves") if f.endswith(".trrm")]
-
-        def back(self):
-            global MENU, load_world_active
-            MENU = True
-            load_world_active = False
-
-        def load_selected(self):
-            global running, world_name
-            if self.selected_world:
-                world_name = self.selected_world.replace(".trrm", "")
-                load_world(os.path.join("saves", self.selected_world))
-                running = False
-
-        def draw(self, screen):
-            screen.blit(menu_background2, (0, 0))
-
-            title = font1.render("Select World", True, WHITE)
-            screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
-
-            self.back_button.draw(screen)
-
-            visible_worlds = self.worlds[self.scroll_offset:self.scroll_offset + 5]
-            for i, world in enumerate(visible_worlds):
-                y_pos = 150 + i * 60
-                rect = pygame.Rect(SCREEN_WIDTH // 2 - 200, y_pos, 400, 50)
-
-                color = (100, 100, 100) if world != self.selected_world else (150, 150, 150)
-                pygame.draw.rect(screen, color, rect)
-                pygame.draw.rect(screen, WHITE, rect, 2)
-
-                name = world.replace(".trrm", "")
-                name_text = font1_.render(name, True, WHITE)
-                screen.blit(name_text, (rect.x + 10, rect.y + 15))
-
-            if len(self.worlds) > 5:
-                if self.scroll_offset > 0:
-                    pygame.draw.polygon(screen, WHITE, [
-                        (SCREEN_WIDTH // 2, 130),
-                        (SCREEN_WIDTH // 2 - 10, 140),
-                        (SCREEN_WIDTH // 2 + 10, 140)
-                    ])
-
-                if self.scroll_offset < len(self.worlds) - 5:
-                    pygame.draw.polygon(screen, WHITE, [
-                        (SCREEN_WIDTH // 2, 450),
-                        (SCREEN_WIDTH // 2 - 10, 440),
-                        (SCREEN_WIDTH // 2 + 10, 440)
-                    ])
-
-            self.load_button.draw(screen)
-
-        def handle_event(self, event):
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                self.back_button.check_click(event.pos)
-                self.load_button.check_click(event.pos)
-
-                visible_worlds = self.worlds[self.scroll_offset:self.scroll_offset + 5]
-                for i, world in enumerate(visible_worlds):
-                    y_pos = 150 + i * 60
-                    rect = pygame.Rect(SCREEN_WIDTH // 2 - 200, y_pos, 400, 50)
-                    if rect.collidepoint(event.pos):
-                        self.selected_world = world
-
-                if event.button == 4:
-                    if self.scroll_offset > 0:
-                        self.scroll_offset -= 1
-                elif event.button == 5:
-                    if self.scroll_offset < len(self.worlds) - 5:
-                        self.scroll_offset += 1
-
-
-    class PauseMenu:
-        def __init__(self):
-            self.buttons = [
-                Button("Resume", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100, 200, 50, self.resume),
-                Button("Main Menu", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 30, 200, 50, self.main_menu),
-                Button("Exit", SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 40, 200, 50, self.exit_game)
-            ]
-
-        def resume(self):
-            global PAUSED
-            PAUSED = False
-
-        def main_menu(self):
-            global PAUSED, running, MENU
-            save_map(world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL,
-                     inventory_chest, chests, inventory.items, furnaces)
-            PAUSED = False
-            running = False
-            MENU = True
-
-        def exit_game(self):
-            global running
-            save_map(world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL,
-                     inventory_chest, chests, inventory.items, furnaces)
-            running = False
-
-        def draw(self, screen):
-            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 150))
-            screen.blit(overlay, (0, 0))
-
-            title = font1.render("Game Paused", True, WHITE)
-            screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, SCREEN_HEIGHT // 2 - 150))
-
-            for button in self.buttons:
-                button.draw(screen)
-
-        def handle_event(self, event):
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                for button in self.buttons:
-                    button.check_click(event.pos)
 
 
     def damage_block(x, y):
@@ -1063,7 +616,7 @@ try:
                         button_.check_click(event.pos)
 
             for button3 in settings_buttons:
-                button3.draw(screen)
+                button3.draw()
         else:
             if MENU:
                 screen.blit(menu_background, (0, 0))
@@ -1078,7 +631,7 @@ try:
                             button2.check_click(event.pos)
 
                 for button1 in buttons:
-                    button1.draw(screen)
+                    button1.draw()
 
             elif load_world_active == True:
 
@@ -1112,77 +665,13 @@ try:
                 screen.blit(label_sid, (500, 350))
                 screen.blit(label_world, (500, 420))
 
-                input_box.draw(screen)
-                worldname_box.draw(screen)
+                input_box.draw()
+                worldname_box.draw()
 
                 for button4 in play_buttons:
-                    button4.draw(screen)
+                    button4.draw()
 
         pygame.display.flip()
-
-
-    def check_ladder_collision(player, world, scroll_x, scroll_y):
-        player_x = (player.x - scroll_x) // TILE_SIZE
-        player_y = (player.y - scroll_y) // TILE_SIZE
-
-        # for dx in [-1, 0, 1]:
-        #     for dy in [-1, 0, 1]:
-        #         tile_x = player_x + dx
-        #         tile_y = player_y + dy
-        #
-        #         if 0 <= tile_x < len(world[0]) and 0 <= tile_y < len(world):
-        #             if world[tile_y][tile_x] == 12:
-        #                 return True
-        try:
-            if world[player_y][player_x][0] == 12:
-                return True
-        except IndexError:
-            return False
-        return False
-
-
-    def check_crafting_result(grid):
-        grid_tuple = tuple(tuple(row) for row in grid)
-
-        for recipe_pattern, result in CRAFTING_RECIPES.items():
-            match = True
-            for y in range(3):
-                for x in range(3):
-                    grid_block = grid[y][x][0] if grid[y][x] else None
-                    recipe_block = recipe_pattern[y][x]
-
-                    if grid_block != recipe_block:
-                        match = False
-                        break
-                if not match:
-                    break
-
-            if match:
-                return result
-
-        return None
-
-
-    def check_inventory_crafting_result(grid):
-        grid_tuple = tuple(tuple(row) for row in grid)
-
-        for recipe_pattern, result in INVENTORY_CRAFTING_RECIPES.items():
-            match = True
-            for y in range(2):
-                for x in range(2):
-                    grid_block = grid[y][x][0] if grid[y][x] else None
-                    recipe_block = recipe_pattern[y][x]
-
-                    if grid_block != recipe_block:
-                        match = False
-                        break
-                if not match:
-                    break
-
-            if match:
-                return result
-
-        return None
 
 
     def trigger_key():
@@ -1306,7 +795,6 @@ try:
     jump_strength = -10
     grounded = False
     ZONE_RADIUS = 1
-    LIGHT_RADIUS = 6
     clock = pygame.time.Clock()
     nearby_blocks = set()
     current_texture = player_textures["idle"]
@@ -1330,6 +818,11 @@ try:
 
     running = True
     while running:
+
+        if not SURVIVAL:
+            LIGHT_RADIUS = 20
+        else:
+            LIGHT_RADIUS = 6
 
         fog_surface.fill((0, 0, 0, 0))
         screen.fill(BLUE)
@@ -1439,7 +932,7 @@ try:
                                     dragging_from_grid = True
                                     dragging_pos = (mx, my)
                                     CRAFTING_GRID[y][x] = None
-                                    CRAFTING_OUTPUT = check_crafting_result(CRAFTING_GRID)
+                                    CRAFTING_OUTPUT = check_crafting_result(CRAFTING_GRID, globals())
                                     break
 
                         output_rect = pygame.Rect(CRAFTING_RECT.x + 200, CRAFTING_RECT.y + 85, TILE_SIZE, TILE_SIZE)
@@ -1721,7 +1214,7 @@ try:
                                     dragging_from_grid = True
                                     dragging_pos = (mx, my)
                                     INVENTORY_CRAFTING_GRID[y][x] = None
-                                    inventory_output = check_inventory_crafting_result(INVENTORY_CRAFTING_GRID)
+                                    inventory_output = check_inventory_crafting_result(INVENTORY_CRAFTING_GRID, globals())
                                     break
 
                         out_rect = pygame.Rect(INVENTORY_CRAFTING_RECT.x + 155, INVENTORY_CRAFTING_RECT.y + 65, TILE_SIZE,
@@ -1837,7 +1330,7 @@ try:
                                 inventory.append_new_item(dragging_item[0], 1)
                                 break
 
-                        CRAFTING_OUTPUT = check_crafting_result(CRAFTING_GRID)
+                        CRAFTING_OUTPUT = check_crafting_result(CRAFTING_GRID, globals())
                         dragging_item = None
                         dragging_from_inventory = False
                         dragging_from_grid = False
@@ -1974,7 +1467,7 @@ try:
             pygame.K_DOWN]) and FLY and current_open_chest is None and trigger_key and not inventory_open:
             player_movement[1] += 5
 
-        if check_ladder_collision(player, world, scroll_x, scroll_y):
+        if check_ladder_collision(player, world, scroll_x, scroll_y, TILE_SIZE):
             if keys[pygame.K_UP] or keys[pygame.K_w] and trigger_key:
                 player_movement[1] -= 5  # Move up
             elif keys[pygame.K_DOWN] or keys[pygame.K_s] and trigger_key:
@@ -2255,7 +1748,7 @@ try:
 
                 pygame.draw.rect(screen, (255, 0, 0), (top_left_x, top_left_y, width, height), width=9)
 
-        stats.draw_ui(screen)
+        stats.draw_ui()
 
         layer_text = layer_font.render(f"Layer:{ActiveLayer}", True, pygame.Color('white'))
 
@@ -2268,7 +1761,7 @@ try:
 
         for dynamite in dynamites:
             dynamite.update(world)
-            dynamite.draw(screen, textures)
+            dynamite.draw(textures)
 
         if time.time() - IMMNUNE_TIMER < 10:
             screen.blit(shield, (player.x - 16, player.y - 16))
@@ -2276,7 +1769,7 @@ try:
         text = font1.render(VERSION, True, WHITE)
         screen.blit(text, (0, SCREEN_HEIGHT - 40))
 
-        console.draw(screen)
+        console.draw()
 
         if stats.health <= 0:
             screen.blit(dead, (0, 0))
@@ -2332,7 +1825,7 @@ try:
             pygame.draw.rect(screen, WHITE, (INVENTORY_CRAFTING_RECT.x + 150, INVENTORY_CRAFTING_RECT.y + 60, 40, 40),
                              2)
 
-            inventory_output = check_inventory_crafting_result(INVENTORY_CRAFTING_GRID)
+            inventory_output = check_inventory_crafting_result(INVENTORY_CRAFTING_GRID, globals())
 
             out_rect = pygame.Rect(INVENTORY_CRAFTING_RECT.x + 155, INVENTORY_CRAFTING_RECT.y + 65, TILE_SIZE,
                                    TILE_SIZE)
@@ -2490,7 +1983,7 @@ try:
             draw_furnace_ui(screen, current_open_furnace)
 
         if PAUSED:
-            pause_menu.draw(screen)
+            pause_menu.draw()
 
         screen.blit(cursor_img, pygame.mouse.get_pos())
 
