@@ -59,12 +59,12 @@ def load(globals):
     }
 
     globals['ores'] = [
-        {"id": 31, "min_y": 560, "max_y": 615, "chance": 0.002, "cluster": 3},  # Diamond: very rare, bottom 60 rows
+        {"id": 31, "min_y": 560, "max_y": 615, "chance": 0.0015, "cluster": 3},  # Diamond: very rare, bottom 60 rows
         {"id": 32, "min_y": 500, "max_y": 600, "chance": 0.003, "cluster": 3},  # Emerald: rare, also deep
         {"id": 33, "min_y": 400, "max_y": 580, "chance": 0.006, "cluster": 4},  # Gold: mid-deep
-        {"id": 34, "min_y": 300, "max_y": 590, "chance": 0.005, "cluster": 5},  # Iron: common, wide range
+        {"id": 34, "min_y": 300, "max_y": 590, "chance": 0.0045, "cluster": 5},  # Iron: common, wide range
         {"id": 36, "min_y": 350, "max_y": 600, "chance": 0.008, "cluster": 5},  # Redstone: mid-deep
-        {"id": 37, "min_y": 100, "max_y": 580, "chance": 0.007, "cluster": 6},  # Coal: most common, large vertical range
+        {"id": 37, "min_y": 100, "max_y": 580, "chance": 0.006, "cluster": 6},  # Coal: most common, large vertical range
     ]
 
     globals['rarities'] = {
