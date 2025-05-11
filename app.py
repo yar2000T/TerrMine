@@ -1262,54 +1262,65 @@ try:
                                 can_place = False
                                 break
 
-                        if world[world_y][world_x][0] == 54:
-                            world[world_y][world_x][1] = 2
-                            world[world_y][world_x][0] = 55
-                        elif world[world_y][world_x][0] == 55:
-                            world[world_y][world_x][1] = 1
-                            world[world_y][world_x][0] = 54
+                        if can_place and block_nearby:
+                            target_block = world[world_y][world_x][0]
+                            block_below = world[world_y + 1][world_x][0] if world_y + 1 < ROWS else None
 
-                        try:
-                            if block_nearby and world[world_y][world_x][0] in [0, 100500]:
-                                if not block_to_place in [38, 39, 40, 41, 42, 43, 44, 48, 50]:
-                                    if block_to_place == 11:
-                                        torches.append((world_x, world_y, ActiveLayer))
-                                    elif block_to_place == 13:
-                                        dynamites.append(Dynamite(world_x, world_y, ActiveLayer))
-                                    elif block_to_place == 14:
-                                        private_blocks.append((world_x, world_y, NAME, ActiveLayer))
+                            if block_to_place in [56, 57, 58, 59, 60, 61]:
+                                if target_block in [0, 100500] and block_below == 2:
+                                    world[world_y][world_x][1] = 1
+                                    world[world_y][world_x][0] = block_to_place
+                                else:
+                                    pass
+                            elif target_block in [0, 100500]:
+                                if target_block == 54:
+                                    world[world_y][world_x][0] = 55
+                                elif target_block == 55:
+                                    world[world_y][world_x][0] = 54
+                                else:
+                                    world[world_y][world_x][0] = block_to_place
 
-                                    if block_to_place == 52:
-                                        chests.append({
-                                            "x": world_x,
-                                            "y": world_y,
-                                            "layer": ActiveLayer,
-                                            "items": [[0, 0] for _ in range(18)]
-                                        })
+                                try:
+                                    if block_nearby and world[world_y][world_x][0] in [0, 100500]:
+                                        if not block_to_place in [38, 39, 40, 41, 42, 43, 44, 48, 50]:
+                                            if block_to_place == 11:
+                                                torches.append((world_x, world_y, ActiveLayer))
+                                            elif block_to_place == 13:
+                                                dynamites.append(Dynamite(world_x, world_y, ActiveLayer))
+                                            elif block_to_place == 14:
+                                                private_blocks.append((world_x, world_y, NAME, ActiveLayer))
 
-                                    if block_to_place == 53:
-                                        furnaces.append({
-                                            "x": world_x,
-                                            "y": world_y,
-                                            "layer": ActiveLayer,
-                                            "fuel": None,
-                                            "input": None,
-                                            "output": None,
-                                            "burn_time": 0,
-                                            "smelt_progress": 0
-                                        })
+                                            if block_to_place == 52:
+                                                chests.append({
+                                                    "x": world_x,
+                                                    "y": world_y,
+                                                    "layer": ActiveLayer,
+                                                    "items": [[0, 0] for _ in range(18)]
+                                                })
 
-                                    if block_to_place != 13:
-                                        world[world_y][world_x][0] = block_to_place
-                                        if block_to_place != 54:
-                                            world[world_y][world_x][1] = ActiveLayer
-                                        else:
-                                            world[world_y][world_x][1] = 1
+                                            if block_to_place == 53:
+                                                furnaces.append({
+                                                    "x": world_x,
+                                                    "y": world_y,
+                                                    "layer": ActiveLayer,
+                                                    "fuel": None,
+                                                    "input": None,
+                                                    "output": None,
+                                                    "burn_time": 0,
+                                                    "smelt_progress": 0
+                                                })
 
-                                    if SURVIVAL and block_to_place not in [0, 100500]:
-                                        inventory.delete_block(block_to_place)
-                        except IndexError:
-                            pass
+                                            if block_to_place != 13:
+                                                world[world_y][world_x][0] = block_to_place
+                                                if block_to_place != 54:
+                                                    world[world_y][world_x][1] = ActiveLayer
+                                                else:
+                                                    world[world_y][world_x][1] = 1
+
+                                            if SURVIVAL and block_to_place not in [0, 100500]:
+                                                inventory.delete_block(block_to_place)
+                                except IndexError:
+                                    pass
 
                 elif event.type == pygame.MOUSEBUTTONUP and dragging_item is not None and not inventory_open:
                     if CRAFTING_OPEN:
@@ -1534,6 +1545,11 @@ try:
                                                         break
 
                                                 if world[ny][nx][0] != 13:
+                                                    if ny > 0:
+                                                        above_block = world[ny - 1][nx][0]
+                                                        if above_block in [56, 57, 58, 59, 60, 61]:
+                                                            world[ny - 1][nx][0] = 100500
+                                                            world[ny - 1][nx][1] = 1
                                                     world[ny][nx][0] = 100500
                                                     world[ny][nx][1] = 1
                                         elif world[ny][nx][1] == 2 and world[ny][nx][0] == 54:
@@ -1618,6 +1634,44 @@ try:
                             if key in damage_tracker and damage_tracker[key] > 0:
                                 screen.blit(destruction_textures[round(damage_tracker[key] - 1)], block_rect)
 
+                            if in_light_radius:
+                                if not NoClip:
+                                    if not block_rect.x in nearby_blocks and not block_rect.x in nearby_blocks:
+                                        if (tile not in [100500, 11, 12, 29, 30, 55, 56, 57, 58, 59, 60, 61] and
+                                                world[y][x][1] in [1, 3]):
+                                            if tile == 54:
+                                                trapdoor_rect = pygame.Rect(
+                                                    block_rect.x,
+                                                    block_rect.y,
+                                                    TILE_SIZE,
+                                                    10
+                                                )
+                                                if player.colliderect(trapdoor_rect):
+                                                    if player_movement[1] > 0:
+                                                        player.bottom = trapdoor_rect.top
+                                                        player_vel_y = 0
+                                                        grounded = True
+                                                    elif player_movement[1] < 0:
+                                                        player.top = trapdoor_rect.bottom
+                                                        player_vel_y = 0
+                                                    elif player_movement[0] > 0:
+                                                        player.right = trapdoor_rect.left
+                                                    elif player_movement[0] < 0:
+                                                        player.left = trapdoor_rect.right
+                                            else:
+                                                if player.colliderect(block_rect):
+                                                    if player_movement[1] > 0:
+                                                        player.bottom = block_rect.top
+                                                        player_vel_y = 0
+                                                        grounded = True
+                                                    elif player_movement[1] < 0:
+                                                        player.top = block_rect.bottom
+                                                        player_vel_y = 0
+                                                    elif player_movement[0] > 0:
+                                                        player.right = block_rect.left
+                                                    elif player_movement[0] < 0:
+                                                        player.left = block_rect.right
+
                     elif key in seen_tiles:
                         if tile in textures and tile != 13:
                             dark_overlay = grayscale_textures[tile].copy()
@@ -1628,42 +1682,6 @@ try:
 
                     else:
                         pygame.draw.rect(screen, (0, 0, 0), block_rect)
-
-                    if not NoClip:
-                        if not block_rect.x in nearby_blocks and not block_rect.x in nearby_blocks:
-                            if tile not in [100500, 11, 12, 29, 30] and world[y][x][1] in [1,3]:
-                                if tile == 54:
-                                    trapdoor_rect = pygame.Rect(
-                                        block_rect.x,
-                                        block_rect.y,
-                                        TILE_SIZE,
-                                        10
-                                    )
-                                    if player.colliderect(trapdoor_rect):
-                                        if player_movement[1] > 0:
-                                            player.bottom = trapdoor_rect.top
-                                            player_vel_y = 0
-                                            grounded = True
-                                        elif player_movement[1] < 0:
-                                            player.top = trapdoor_rect.bottom
-                                            player_vel_y = 0
-                                        elif player_movement[0] > 0:
-                                            player.right = trapdoor_rect.left
-                                        elif player_movement[0] < 0:
-                                            player.left = trapdoor_rect.right
-                                else:
-                                    if player.colliderect(block_rect):
-                                        if player_movement[1] > 0:
-                                            player.bottom = block_rect.top
-                                            player_vel_y = 0
-                                            grounded = True
-                                        elif player_movement[1] < 0:
-                                            player.top = block_rect.bottom
-                                            player_vel_y = 0
-                                        elif player_movement[0] > 0:
-                                            player.right = block_rect.left
-                                        elif player_movement[0] < 0:
-                                            player.left = block_rect.right
 
                 except IndexError:
                     pass
@@ -1681,7 +1699,8 @@ try:
 
                     if not NoClip:
                         if not block_rect.x in nearby_blocks and not block_rect.x in nearby_blocks:
-                            if player.colliderect(block_rect) and world[y][x][1] == 1 and tile not in [100500, 11, 12, 29, 30]:
+                            if player.colliderect(block_rect) and world[y][x][1] == 1 and tile not in [100500, 11, 12,
+                                                                                                       29, 30, 55, 56, 57, 58, 59, 60, 61]:
                                 if player_movement[0] > 0:
                                     player.right = block_rect.left
                                 elif player_movement[0] < 0:

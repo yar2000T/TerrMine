@@ -151,6 +151,24 @@ def load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_
         55: pygame.transform.scale(
             pygame.image.load(os.path.join(BASE_DIR, "assets\\trapdoor\\opened.png")).convert_alpha(),
             (TILE_SIZE, TILE_SIZE)),
+        56: pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\saplings\\sapling_acacia.png")).convert_alpha(),
+            (TILE_SIZE, TILE_SIZE)),
+        57: pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\saplings\\sapling_birch.png")).convert_alpha(),
+            (TILE_SIZE, TILE_SIZE)),
+        58: pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\saplings\\sapling_jungle.png")).convert_alpha(),
+            (TILE_SIZE, TILE_SIZE)),
+        59: pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\saplings\\sapling_oak.png")).convert_alpha(),
+            (TILE_SIZE, TILE_SIZE)),
+        60: pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\saplings\\sapling_roofed_oak.png")).convert_alpha(),
+            (TILE_SIZE, TILE_SIZE)),
+        61: pygame.transform.scale(
+            pygame.image.load(os.path.join(BASE_DIR, "assets\\saplings\\sapling_spruce.png")).convert_alpha(),
+            (TILE_SIZE, TILE_SIZE)),
         100: pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\bedrock.png")).convert(),
                                     (TILE_SIZE, TILE_SIZE)),
     }

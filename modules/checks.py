@@ -1,6 +1,4 @@
 def check_crafting_result(grid, glob):
-    grid_tuple = tuple(tuple(row) for row in grid)
-
     for recipe_pattern, result in glob['CRAFTING_RECIPES'].items():
         match = True
         for y in range(3):
@@ -21,8 +19,6 @@ def check_crafting_result(grid, glob):
 
 
 def check_inventory_crafting_result(grid, glob):
-    grid_tuple = tuple(tuple(row) for row in grid)
-
     for recipe_pattern, result in glob['INVENTORY_CRAFTING_RECIPES'].items():
         match = True
         for y in range(2):
