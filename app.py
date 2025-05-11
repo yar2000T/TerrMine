@@ -792,7 +792,7 @@ try:
     pause_menu = PauseMenu()
     player_vel_y = 0
     gravity = 0.5
-    jump_strength = -10
+    jump_strength = -7
     grounded = False
     ZONE_RADIUS = 1
     clock = pygame.time.Clock()
@@ -1230,7 +1230,7 @@ try:
 
                         can_place_under_player = True
                         for i in range(2):
-                            check_tile_x = (player.x + (20 if i == 1 else -20) - scroll_x) // TILE_SIZE
+                            check_tile_x = (player.x + (25 if i == 1 else -25) - scroll_x) // TILE_SIZE
                             check_tile_y = (player.y + player.height // 2 - scroll_y) // TILE_SIZE  # use center Y
 
                             if world_x == check_tile_x and world_y == check_tile_y:
