@@ -1,14 +1,14 @@
 def load(globals):
     globals['block_hardness'] = {
-        1: 0.5,  # Dirt
-        2: 0.6,  # Grass
-        3: 1.5,  # Stone
-        4: 2.0,  # Brick
-        5: 5.0,  # Diamond block
-        6: 3.0,  # End bricks
-        7: 1.0,  # Oak Planks
-        8: 0.2,  # Oak Leaves
-        9: 2.0,  # Oak Log
+        1: 0.5,   # Dirt
+        2: 0.6,   # Grass
+        3: 1.5,   # Stone
+        4: 2.0,   # Brick
+        5: 5.0,   # Diamond block
+        6: 3.0,   # End bricks
+        7: 1.0,   # Oak Planks
+        8: 0.2,   # Oak Leaves
+        9: 2.0,   # Oak Log
         10: 2.0,  # Stone Brick
         11: 0.1,  # Torch
         12: 0.2,  # Ladder
@@ -50,7 +50,11 @@ def load(globals):
         48: 0.0,  # Gunpowder (item)
         49: 0.0,  # Sand
         50: 0.0,  # Stick (item)
-        51: 1.3,
+        51: 1.3,  # Cobblestone mossy
+        52: 1.0,  # Chest
+        53: 1.3,  # Furnace
+        54: 1.0,  # Trapdoor (closed)
+        55: 1.0,  # Trapdoor (opened)
         100: 9999.0,  # Bedrock (unbreakable)
     }
 

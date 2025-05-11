@@ -191,6 +191,7 @@ try:
     block_hardness = {}
     ores = []
     rarities = {}
+    trapdoor_stab = None
 
     modules.textures.load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_HEIGHT, globals())
     modules.sounds.load(pygame, BASE_DIR, globals())
@@ -217,7 +218,6 @@ try:
     scroll_x = -6000
     scroll_y = -6000
     health = 10
-    SURVIVAL = False
     IMMNUNE_TIME = 10
     IMMNUNE_TIMER = time.time() + 10
     seed = None
@@ -643,7 +643,7 @@ try:
                     elif event.type == pygame.MOUSEBUTTONDOWN:
                         world_selection.handle_event(event)
 
-                world_selection.draw(screen)
+                world_selection.draw()
             else:
                 screen.blit(menu_background2, (0, 0))
 
@@ -1275,7 +1275,6 @@ try:
                                     if block_to_place == 11:
                                         torches.append((world_x, world_y, ActiveLayer))
                                     elif block_to_place == 13:
-
                                         dynamites.append(Dynamite(world_x, world_y, ActiveLayer))
                                     elif block_to_place == 14:
                                         private_blocks.append((world_x, world_y, NAME, ActiveLayer))
@@ -1509,32 +1508,37 @@ try:
                             if 0 <= nx < COLS and 0 <= ny < ROWS:
                                 dist = math.sqrt(dx ** 2 + dy ** 2)
                                 if dist <= 4:
-                                    if world[ny][nx][0] != 0 and world[ny][nx][1] == ActiveLayer and (
-                                            GOD or world[ny][nx][0] != 100):
-                                        dstr = damage_block(nx, ny)
-                                        if dstr == 1:
-                                            if world[ny][nx][0] in [31, 32, 33, 34, 35, 36, 37]:
-                                                inventory.append_new_item(world[ny][nx][0] + 7)
-                                            elif world[ny][nx][0] == 3:
-                                                inventory.append_new_item(47)
-                                            else:
-                                                inventory.append_new_item(world[ny][nx][0])
+                                    if world[ny][nx][0] != 0 and GOD or world[ny][nx][0] != 100:
+                                        if world[ny][nx][1] == ActiveLayer:
+                                            dstr = damage_block(nx, ny)
+                                            if dstr == 1:
+                                                if world[ny][nx][0] in [31, 32, 33, 34, 35, 36, 37]:
+                                                    inventory.append_new_item(world[ny][nx][0] + 7)
+                                                elif world[ny][nx][0] == 3:
+                                                    inventory.append_new_item(47)
+                                                else:
+                                                    inventory.append_new_item(world[ny][nx][0])
 
-                                            torch_positions = set(torches)
-                                            for pb in torch_positions:
-                                                pb_x, pb_y, layer = pb
-                                                if pb_x == nx and pb_y == ny:
-                                                    torches.remove(pb)
-                                                    break
+                                                torch_positions = set(torches)
+                                                for pb in torch_positions:
+                                                    pb_x, pb_y, layer = pb
+                                                    if pb_x == nx and pb_y == ny:
+                                                        torches.remove(pb)
+                                                        break
 
-                                            for pb in private_blocks:
-                                                pb_x, pb_y, owner, layer = pb
-                                                if pb_x == nx and pb_y == ny:
-                                                    private_blocks.remove(pb)
-                                                    # console.history.append(f"Removed private block at {nx}, {ny}")
-                                                    break
+                                                for pb in private_blocks:
+                                                    pb_x, pb_y, owner, layer = pb
+                                                    if pb_x == nx and pb_y == ny:
+                                                        private_blocks.remove(pb)
+                                                        # console.history.append(f"Removed private block at {nx}, {ny}")
+                                                        break
 
-                                            if world[ny][nx][0] != 13:
+                                                if world[ny][nx][0] != 13:
+                                                    world[ny][nx][0] = 100500
+                                                    world[ny][nx][1] = 1
+                                        elif world[ny][nx][1] == 2 and world[ny][nx][0] == 54:
+                                            dstr = damage_block(nx, ny)
+                                            if dstr == 1:
                                                 world[ny][nx][0] = 100500
                                                 world[ny][nx][1] = 1
 
@@ -1734,7 +1738,10 @@ try:
                 inventory_rect = pygame.Rect(inventory_x + i * TILE_SIZE, inventory_y, TILE_SIZE, TILE_SIZE)
 
                 if block_id in textures:
-                    screen.blit(textures[block_id], inventory_rect)
+                    if block_id != 54:
+                        screen.blit(textures[block_id], inventory_rect)
+                    else:
+                        screen.blit(trapdoor_stab, inventory_rect)
 
                 if quantity > 1 and block_id not in [0, 100500]:
                     quantity_text = font1_.render(str(quantity), True, WHITE)
@@ -1790,7 +1797,10 @@ try:
                                        TILE_SIZE, TILE_SIZE)
                     item = CRAFTING_GRID[y][x]
                     if item:
-                        screen.blit(textures[item[0]], rect)
+                        if item != 54:
+                            screen.blit(textures[item[0]], rect)
+                        else:
+                            screen.blit(trapdoor_stab, rect)
 
                     pygame.draw.rect(screen, WHITE, rect, 2)
 
@@ -1805,7 +1815,11 @@ try:
 
             out_rect = pygame.Rect(CRAFTING_RECT.x + 200, CRAFTING_RECT.y + 85, TILE_SIZE, TILE_SIZE)
             if CRAFTING_OUTPUT:
-                screen.blit(textures[CRAFTING_OUTPUT[0]], out_rect)
+                if CRAFTING_OUTPUT[0] != 54:
+                    screen.blit(textures[CRAFTING_OUTPUT[0]], out_rect)
+                else:
+                    screen.blit(trapdoor_stab, out_rect)
+
                 qty_text = font1_.render(str(CRAFTING_OUTPUT[1]), True, WHITE)
                 screen.blit(qty_text, (out_rect.x + 3, out_rect.y + TILE_SIZE - 17))
                 pygame.draw.rect(screen, WHITE, out_rect, 2)
@@ -1837,7 +1851,11 @@ try:
             out_rect = pygame.Rect(INVENTORY_CRAFTING_RECT.x + 155, INVENTORY_CRAFTING_RECT.y + 65, TILE_SIZE,
                                    TILE_SIZE)
             if inventory_output:
-                screen.blit(textures[inventory_output[0]], out_rect)
+                if inventory_output[0] != 54:
+                    screen.blit(textures[inventory_output[0]], out_rect)
+                else:
+                    screen.blit(trapdoor_stab, out_rect)
+
                 qty_text = font1_.render(str(inventory_output[1]), True, WHITE)
                 screen.blit(qty_text, (out_rect.x + 3, out_rect.y + TILE_SIZE - 17))
 
@@ -1871,8 +1889,11 @@ try:
 
             if dragging_item and dragging_pos:
                 try:
-                    screen.blit(textures[dragging_item[0]],
-                                (dragging_pos[0] - TILE_SIZE // 2, dragging_pos[1] - TILE_SIZE // 2))
+                    if dragging_item[0] != 54:
+                        screen.blit(textures[dragging_item[0]],
+                                    (dragging_pos[0] - TILE_SIZE // 2, dragging_pos[1] - TILE_SIZE // 2))
+                    else:
+                        screen.blit(trapdoor_stab, (dragging_pos[0] - TILE_SIZE // 2, dragging_pos[1] - TILE_SIZE // 2))
                     if dragging_item[1] > 1:
                         amt_surf = font1_.render(str(dragging_item[1]), True, WHITE)
                         screen.blit(amt_surf, (dragging_pos[0] + 12, dragging_pos[1] + 12))
@@ -1910,7 +1931,11 @@ try:
 
                     item = inventory_chest[row][col]
                     if item and item[0] != 0:
-                        screen.blit(textures[item[0]], slot_rect.topleft)
+                        if item[0] != 54:
+                            screen.blit(textures[item[0]], slot_rect.topleft)
+                        else:
+                            screen.blit(trapdoor_stab, slot_rect.topleft)
+
                         if item[1] > 1:
                             qty_text = font1_.render(str(item[1]), True, WHITE)
                             screen.blit(qty_text, (
@@ -1936,7 +1961,11 @@ try:
                 pygame.draw.rect(screen, (150, 150, 150), slot_rect, 2)
 
                 if item[0] != 0 and item[0] != 100500:
-                    screen.blit(textures[item[0]], slot_rect.topleft)
+                    if item[0] != 54:
+                        screen.blit(textures[item[0]], slot_rect.topleft)
+                    else:
+                        screen.blit(trapdoor_stab, slot_rect.topleft)
+
                     if item[1] > 1:
                         qty_text = font1_.render(str(item[1]), True, WHITE)
                         screen.blit(qty_text, (
@@ -1951,10 +1980,15 @@ try:
 
         if dragging_item and dragging_pos:
             try:
-                screen.blit(
-                    textures[dragging_item[0]],
-                    (dragging_pos[0] - TILE_SIZE // 2, dragging_pos[1] - TILE_SIZE // 2)
-                )
+                if dragging_item[0] != 54:
+                    screen.blit(
+                        textures[dragging_item[0]],
+                        (dragging_pos[0] - TILE_SIZE // 2, dragging_pos[1] - TILE_SIZE // 2)
+                    )
+                else:
+                    screen.blit(trapdoor_stab,
+                        (dragging_pos[0] - TILE_SIZE // 2, dragging_pos[1] - TILE_SIZE // 2)
+                    )
                 if dragging_item[1] > 1:
                     qty_text = font1_.render(str(dragging_item[1]), True, WHITE)
                     screen.blit(qty_text, (dragging_pos[0] + 5, dragging_pos[1] + 5))

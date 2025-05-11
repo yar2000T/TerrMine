@@ -359,7 +359,7 @@ class WorldSelectionMenu:
             globals_var['load_world'](os.path.join("saves", self.selected_world))
             running = False
 
-    def draw(self, screen):
+    def draw(self):
         globals_var['screen'].blit(globals_var['menu_background2'], (0, 0))
 
         title = globals_var['font1'].render("Select World", True, globals_var['WHITE'])

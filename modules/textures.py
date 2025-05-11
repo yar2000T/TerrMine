@@ -272,3 +272,6 @@ def load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_
     globals['shield'] = pygame.image.load(os.path.join(BASE_DIR,"assets\\player\\shield.png")).convert_alpha(screen)
 
     globals['explosion_img'] = pygame.image.load(os.path.join(BASE_DIR,"assets\\explosion.png")).convert_alpha()
+
+    globals['trapdoor_stab'] = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\stabs\\trapdoor.png")).convert_alpha(screen),
+        (TILE_SIZE, TILE_SIZE))
