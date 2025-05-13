@@ -67,7 +67,7 @@ def update_saplings(glob):
 
     for sapling in glob['saplings'][:]:
 
-        if current_time - sapling["plant_time"] >= 5:
+        if current_time - sapling["plant_time"] >= glob['random'].randrange(120, 360):
             growable_saplings.append(sapling)
             glob['saplings'].remove(sapling)
 
