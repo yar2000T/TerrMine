@@ -1305,7 +1305,7 @@ try:
                                                 chests.append({
                                                     "x": world_x,
                                                     "y": world_y,
-                                                    "layer": ActiveLaaaaayer,
+                                                    "layer": ActiveLayer,
                                                     "items": [[0, 0] for _ in range(18)]
                                                 })
 
