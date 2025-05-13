@@ -194,6 +194,8 @@ try:
     trapdoor_stab = None
     saplings = []
     SAPLING_TO_TREE = {}
+    button_img = None
+    button_hover_img = None
 
     modules.textures.load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_HEIGHT, globals())
     modules.sounds.load(pygame, BASE_DIR, globals())
@@ -521,34 +523,32 @@ try:
     world_selection = WorldSelectionMenu()
 
     buttons = [
-        Button("Play", 180, 200, 200, 50, show_play_menu),
-        Button("Load World", 430, 200, 200, 50, show_worlds),
-        # Button("Connect", 300, 300, 200, 50, conn_multiplayer_game),
-        FakeButton("Connect", 300, 300, 200, 50),
-        Button("Settings", 300, 400, 200, 50, open_settings),
-        Button("Quit", 300, 500, 200, 50, quit_game)
+        Button("Play", 180, 200, show_play_menu),
+        Button("Load World", 430, 200, show_worlds),
+        Button("Settings", 300, 400, open_settings),
+        Button("Quit", 300, 500, quit_game)
     ]
 
     SURVIVAL = True
 
     play_buttons = [
-        Button("Mode: Survival", 300, 200, 200, 50, change_mode),
-        Button("Generate", 300, 500, 200, 50, play_game),
+        Button("Mode: Survival", 280, 200, change_mode),
+        Button("Generate", 280, 400, play_game),
     ]
-    input_box = InputBox(300, 350, 200, 50, "Enter SID")
-    worldname_box = InputBox(300, 420, 200, 50, "Enter World Name")
+    input_box = InputBox(280, 340)
+    worldname_box = InputBox(280, 100)
 
     settings_buttons = [
-        Button("Back", 50, 50, 150, 40, back),
-        Button("VGA (640x480)", 50, 150, 330, 40, lambda: res_obj.set_resolution((640, 480))),
-        Button("SVGA (800x600)", 50, 200, 330, 40, lambda: res_obj.set_resolution((800, 600))),
-        Button("XGA (1024x768)", 50, 250, 330, 40, lambda: res_obj.set_resolution((1024, 768))),
-        Button("HD (1280x720)", 50, 300, 330, 40, lambda: res_obj.set_resolution((1280, 720))),
-        Button("WXGA (1366x768)", 400, 150, 330, 40, lambda: res_obj.set_resolution((1366, 768))),
-        Button("HD+ (1600x900)", 400, 200, 330, 40, lambda: res_obj.set_resolution((1600, 900))),
-        Button("Full HD (1920x1080)", 400, 250, 330, 40, lambda: res_obj.set_resolution((1920, 1080))),
-        Button("QHD (2560x1440)", 400, 300, 330, 40, lambda: res_obj.set_resolution((2560, 1440))),
-        Button("4K UHD (3840x2160)", 200, 350, 330, 40, lambda: res_obj.set_resolution((3840, 2160))),
+        Button("Back", 50, 50, back),
+        Button("VGA (640x480)", 50, 150, lambda: res_obj.set_resolution((640, 480))),
+        Button("SVGA (800x600)", 50, 200, lambda: res_obj.set_resolution((800, 600))),
+        Button("XGA (1024x768)", 50, 250, lambda: res_obj.set_resolution((1024, 768))),
+        Button("HD (1280x720)", 50, 300, lambda: res_obj.set_resolution((1280, 720))),
+        Button("WXGA (1366x768)", 400, 150, lambda: res_obj.set_resolution((1366, 768))),
+        Button("HD+ (1600x900)", 400, 200, lambda: res_obj.set_resolution((1600, 900))),
+        Button("Full HD (1920x1080)", 400, 250, lambda: res_obj.set_resolution((1920, 1080))),
+        Button("QHD (2560x1440)", 400, 300, lambda: res_obj.set_resolution((2560, 1440))),
+        Button("4K UHD (3840x2160)", 200, 350, lambda: res_obj.set_resolution((3840, 2160))),
     ]
 
 
@@ -618,6 +618,9 @@ try:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     for button_ in settings_buttons:
                         button_.check_click(event.pos)
+                elif event.type == pygame.MOUSEMOTION:
+                    for button_ in settings_buttons:
+                        button_.update_hover(event.pos)
 
             for button3 in settings_buttons:
                 button3.draw()
@@ -634,6 +637,10 @@ try:
                         for button2 in buttons:
                             button2.check_click(event.pos)
 
+                    elif event.type == pygame.MOUSEMOTION:
+                        for button2 in buttons:
+                            button2.update_hover(event.pos)
+
                 for button1 in buttons:
                     button1.draw()
 
@@ -647,6 +654,9 @@ try:
                     elif event.type == pygame.MOUSEBUTTONDOWN:
                         world_selection.handle_event(event)
 
+                    elif event.type == pygame.MOUSEMOTION:
+                        world_selection.update_hover(event.pos)
+
                 world_selection.draw()
             else:
                 screen.blit(menu_background2, (0, 0))
@@ -657,6 +667,9 @@ try:
                     elif event.type == pygame.MOUSEBUTTONDOWN:
                         for button in play_buttons:
                             button.check_click(event.pos)
+                    elif event.type == pygame.MOUSEMOTION:
+                        for button in play_buttons:
+                            button.update_hover(event.pos)
 
                     worldname_box.handle_event(event)
                     input_box.handle_event(event)
@@ -666,8 +679,8 @@ try:
                 label_sid = font1.render("Enter SID", True, WHITE)
                 label_world = font1.render("World Name", True, WHITE)
 
-                screen.blit(label_sid, (500, 350))
-                screen.blit(label_world, (500, 420))
+                screen.blit(label_sid, (330, 280))
+                screen.blit(label_world, (320, 50))
 
                 input_box.draw()
                 worldname_box.draw()

@@ -103,38 +103,29 @@ class PlayerStats:
             self.draw_hearts()
 
 
-class FakeButton:
-
-    def __init__(self, text, x, y, width, height):
-        self.text = text
-        self.rect = globals_var['pygame'].Rect(x, y, width, height)
-
-    def draw(self):
-        globals_var['pygame'].draw.rect(globals_var['screen'], globals_var['GRAY'], self.rect, border_radius=10)
-        text_surf = globals_var['font1'].render(self.text, True, globals_var['BLACK'])
-        text_rect = text_surf.get_rect(center=self.rect.center)
-        globals_var['screen'].blit(text_surf, text_rect)
-
-    def check_click(self, pos):
-        pass
-
-
 class Button:
 
-    def __init__(self, text, x, y, width, height, action):
+    def __init__(self, text, x, y, action):
         self.text = text
-        self.rect = globals_var['pygame'].Rect(x, y, width, height)
+        self.rect = globals_var['pygame'].Rect(x, y, globals_var['button_img'].get_width(), globals_var['button_img'].get_height())
         self.action = action
-
-    def draw(self):
-        globals_var['pygame'].draw.rect(globals_var['screen'], globals_var['GRAY'], self.rect, border_radius=10)
-        text_surf = globals_var['font1'].render(self.text, True, globals_var['BLACK'])
-        text_rect = text_surf.get_rect(center=self.rect.center)
-        globals_var['screen'].blit(text_surf, text_rect)
+        self.hovered = False
 
     def check_click(self, pos):
         if self.rect.collidepoint(pos):
             self.action()
+
+    def update_hover(self, mouse_pos):
+        self.hovered = self.rect.collidepoint(mouse_pos)
+
+    def draw(self):
+        if self.hovered:
+            globals_var['screen'].blit(globals_var['button_hover_img'], self.rect.topleft)
+        else:
+            globals_var['screen'].blit(globals_var['button_img'], self.rect.topleft)
+        text_surf = globals_var['font1'].render(self.text, True, globals_var['BLACK'])
+        text_rect = text_surf.get_rect(center=self.rect.center)
+        globals_var['screen'].blit(text_surf, text_rect)
 
 
 class Inventory:
@@ -299,12 +290,18 @@ class Dynamite:
 
 
 class InputBox:
-    def __init__(self, x, y, w, h, text=''):
-        self.rect = globals_var['pygame'].Rect(x, y, w, h)
-        self.color = globals_var['pygame'].Color('gray')
-        self.text = text
-        self.txt_surface = globals_var['font1_'].render(text, True, self.color)
+    def __init__(self, x, y):
+        self.text = ""
+        self.rect = globals_var['pygame'].Rect(
+            x, y,
+            globals_var['button_img'].get_width(),
+            globals_var['button_img'].get_height()
+        )
+        self.font = globals_var['font1_']
+        self.txt_surface = self.font.render(self.text, True, globals_var['WHITE'])
+        self.color = globals_var['button_img']
         self.active = False
+        self.scale = 2
 
     def handle_event(self, event):
         if event.type == globals_var['pygame'].MOUSEBUTTONDOWN:
@@ -312,25 +309,32 @@ class InputBox:
                 self.active = not self.active
             else:
                 self.active = False
-            self.color = globals_var['pygame'].Color('lightgray') if self.active else globals_var['pygame'].Color('gray')
-        if event.type == globals_var['pygame'].KEYDOWN:
-            if self.active:
-                if event.key == globals_var['pygame'].K_RETURN:
-                    return self.text
-                elif event.key == globals_var['pygame'].K_BACKSPACE:
-                    self.text = self.text[:-1]
-                else:
+            self.color = globals_var['button_hover_img'] if self.active else globals_var['button_img']
+
+        if event.type == globals_var['pygame'].KEYDOWN and self.active:
+            if event.key == globals_var['pygame'].K_RETURN:
+                return self.text
+            elif event.key == globals_var['pygame'].K_BACKSPACE:
+                self.text = self.text[:-1]
+            else:
+                if len(self.text) < 16:
                     self.text += event.unicode
-                self.txt_surface = globals_var['font1_'].render(self.text, True, globals_var['pygame'].Color('white'))
+            self.txt_surface = self.font.render(self.text, True, globals_var['WHITE'])
         return None
 
     def update(self):
-        width = max(200, self.txt_surface.get_width() + 10)
-        self.rect.w = width
+        pass
 
     def draw(self):
-        globals_var['pygame'].draw.rect(globals_var['screen'], self.color, self.rect)
-        globals_var['screen'].blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
+        globals_var['screen'].blit(self.color, self.rect)
+        scaled_surface = globals_var['pygame'].transform.scale(
+            self.txt_surface,
+            (int(self.txt_surface.get_width() * self.scale),
+             int(self.txt_surface.get_height() * self.scale))
+        )
+        text_rect = scaled_surface.get_rect(center=self.rect.center)
+        globals_var['screen'].blit(scaled_surface, text_rect)
+
 
 
 class WorldSelectionMenu:
@@ -338,8 +342,8 @@ class WorldSelectionMenu:
         self.worlds = []
         self.scroll_offset = 0
         self.selected_world = None
-        self.load_button = Button("Load", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] - 100, 200, 50, self.load_selected)
-        self.back_button = Button("Back", 50, 50, 100, 40, self.back)
+        self.load_button = Button("Load", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] - 100, self.load_selected)
+        self.back_button = Button("Back", 50, 50, self.back)
         self.refresh_worlds()
 
     def refresh_worlds(self):
@@ -420,32 +424,31 @@ class WorldSelectionMenu:
 class PauseMenu:
     def __init__(self):
         self.buttons = [
-            Button("Resume", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] // 2 - 100, 200, 50, self.resume),
-            Button("Main Menu", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] // 2 - 30, 200, 50, self.main_menu),
-            Button("Exit", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] // 2 + 40, 200, 50, self.exit_game)
+            Button("Resume", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] // 2 - 100, self.resume),
+            Button("Main Menu", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] // 2 - 30, self.main_menu),
+            Button("Exit", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] // 2 + 40, self.exit_game)
         ]
 
     def resume(self):
-        global PAUSED
-        PAUSED = False
+        globals_var['PAUSED'] = False
 
     def main_menu(self):
         global PAUSED, running, MENU
         globals_var['save_map'](globals_var['world'], globals_var['torches'], globals_var['private_blocks'], globals_var['homes'],
                                 globals_var['GameMode'], globals_var['scroll_x'], globals_var['scroll_y'], globals_var['player'],
                                 globals_var['SURVIVAL'], globals_var['inventory_chest'], globals_var['chests'],
-                                globals_var['inventory.items'], globals_var['furnaces'], globals_var['saplings'])
-        PAUSED = False
-        running = False
-        MENU = True
+                                globals_var['inventory'].items, globals_var['furnaces'], globals_var['saplings'])
+        globals_var['PAUSED'] = False
+        globals_var['running'] = False
+        globals_var['MENU'] = True
 
     def exit_game(self):
         global running
         globals_var['save_map'](globals_var['world'], globals_var['torches'], globals_var['private_blocks'], globals_var['homes'],
                                 globals_var['GameMode'], globals_var['scroll_x'], globals_var['scroll_y'], globals_var['player'],
                                 globals_var['SURVIVAL'], globals_var['inventory_chest'], globals_var['chests'],
-                                globals_var['inventory.items'], globals_var['furnaces'], globals_var['saplings'])
-        running = False
+                                globals_var['inventory'].items, globals_var['furnaces'], globals_var['saplings'])
+        globals_var['running'] = False
 
     def draw(self):
         overlay = globals_var['pygame'].Surface((globals_var['SCREEN_WIDTH'], globals_var['SCREEN_HEIGHT']), globals_var['pygame'].SRCALPHA)

@@ -293,3 +293,9 @@ def load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_
 
     globals['trapdoor_stab'] = pygame.transform.scale(pygame.image.load(os.path.join(BASE_DIR, "assets\\stabs\\trapdoor.png")).convert_alpha(screen),
         (TILE_SIZE, TILE_SIZE))
+
+    button_img = pygame.image.load(os.path.join(BASE_DIR, "assets/ui/button.png")).convert_alpha()
+    button_hover_img = pygame.image.load(os.path.join(BASE_DIR, "assets/ui/button_hover.png")).convert_alpha()
+
+    globals['button_img'] = pygame.transform.scale(button_img, (250, 50))
+    globals['button_hover_img'] = pygame.transform.scale(button_hover_img, (250, 50))
