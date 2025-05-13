@@ -238,14 +238,14 @@ class Dynamite:
         self.blink_state = False
         self.falling = True
 
-    def update(self, world):
+    def update(self):
         if self.exploded:
             if self.explosion_time is not None and globals_var['time'].time() - self.explosion_time > 0.5:
-                dynamites.remove(self)
+                globals_var['dynamites'].remove(self)
             return
 
         if self.falling:
-            if self.y + 1 < globals_var['ROWS'] and world[self.y + 1][self.x][0] in [0, 100500]:
+            if self.y + 1 < globals_var['ROWS'] and globals_var['world'][self.y + 1][self.x][0] in [0, 100500]:
                 self.y += 1
             else:
                 self.falling = False
@@ -259,26 +259,26 @@ class Dynamite:
                     self.last_blink = globals_var['time'].time()
 
             if elapsed >= self.countdown:
-                self.explode(world)
+                self.explode()
 
-    def explode(self, world):
-        explosion_sound.play()
+    def explode(self):
+        globals_var['explosion_sound'].play()
         explosion_radius = 3
         cx, cy = self.x, self.y
 
         for dx in range(-explosion_radius, explosion_radius + 1):
             for dy in range(-explosion_radius, explosion_radius + 1):
-                dist = math.sqrt(dx ** 2 + dy ** 2)
+                dist = globals_var['math'].sqrt(dx ** 2 + dy ** 2)
                 if dist <= explosion_radius:
                     nx, ny = cx + dx, cy + dy
                     if 0 <= nx < globals_var['COLS'] and 0 <= ny < globals_var['ROWS']:
-                        if world[ny][nx][0] != 100:
-                            world[ny][nx][0] = 100500
+                        if globals_var['world'][ny][nx][0] != 100:
+                            globals_var['world'][ny][nx][0] = 100500
 
-                        for pb in private_blocks:
+                        for pb in globals_var['private_blocks']:
                             pb_x, pb_y, owner, layer = pb
                             if pb_x == nx and pb_y == ny:
-                                private_blocks.remove(pb)
+                                globals_var['private_blocks'].remove(pb)
                                 # console.history.append(f"Private block at ({nx}, {ny}) destroyed!")
                                 break
 
@@ -287,15 +287,15 @@ class Dynamite:
 
     def draw(self, textures):
         if self.exploded:
-            screen.blit(explosion_img, ((self.x * TILE_SIZE + scroll_x) - explosion_img.get_width() // 2,
-                                        (self.y * TILE_SIZE + scroll_y) - explosion_img.get_height() // 2))
+            globals_var['screen'].blit(globals_var['explosion_img'], ((self.x * globals_var['TILE_SIZE'] + globals_var['scroll_x']) - globals_var['explosion_img'].get_width() // 2,
+                                        (self.y * globals_var['TILE_SIZE'] + globals_var['scroll_y']) - globals_var['explosion_img'].get_height() // 2))
         else:
-            tnt_texture = textures[13].copy()
+            tnt_texture = globals_var['textures'][13].copy()
             if self.blink_state:
                 tnt_texture.set_alpha(150)
-                screen.blit(tnt_texture, (self.x * TILE_SIZE + scroll_x, self.y * TILE_SIZE + scroll_y))
+                globals_var['screen'].blit(tnt_texture, (self.x * globals_var['TILE_SIZE'] + globals_var['scroll_x'], self.y * globals_var['TILE_SIZE'] + globals_var['scroll_y']))
             else:
-                screen.blit(textures[13], (self.x * TILE_SIZE + scroll_x, self.y * TILE_SIZE + scroll_y))
+                globals_var['screen'].blit(globals_var['textures'][13], (self.x * globals_var['TILE_SIZE'] + globals_var['scroll_x'], self.y * globals_var['TILE_SIZE'] + globals_var['scroll_y']))
 
 
 class InputBox:
@@ -434,7 +434,7 @@ class PauseMenu:
         globals_var['save_map'](globals_var['world'], globals_var['torches'], globals_var['private_blocks'], globals_var['homes'],
                                 globals_var['GameMode'], globals_var['scroll_x'], globals_var['scroll_y'], globals_var['player'],
                                 globals_var['SURVIVAL'], globals_var['inventory_chest'], globals_var['chests'],
-                                globals_var['inventory.items'], globals_var['furnaces'])
+                                globals_var['inventory.items'], globals_var['furnaces'], globals_var['saplings'])
         PAUSED = False
         running = False
         MENU = True
@@ -444,7 +444,7 @@ class PauseMenu:
         globals_var['save_map'](globals_var['world'], globals_var['torches'], globals_var['private_blocks'], globals_var['homes'],
                                 globals_var['GameMode'], globals_var['scroll_x'], globals_var['scroll_y'], globals_var['player'],
                                 globals_var['SURVIVAL'], globals_var['inventory_chest'], globals_var['chests'],
-                                globals_var['inventory.items'], globals_var['furnaces'])
+                                globals_var['inventory.items'], globals_var['furnaces'], globals_var['saplings'])
         running = False
 
     def draw(self):

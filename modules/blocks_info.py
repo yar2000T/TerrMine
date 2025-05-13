@@ -87,3 +87,12 @@ def load(globals):
         30: {"rarity": 0.15, "max_count": 3},  # Brown Mushroom
         13: {"rarity": 0.05, "max_count": 1},  # TNT
     }
+
+    globals['SAPLING_TO_TREE'] = {
+        56: 16,
+        57: 18,
+        58: 19,
+        59: 9,
+        60: 16,
+        61: 19
+    }

@@ -192,6 +192,8 @@ try:
     ores = []
     rarities = {}
     trapdoor_stab = None
+    saplings = []
+    SAPLING_TO_TREE = {}
 
     modules.textures.load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_HEIGHT, globals())
     modules.sounds.load(pygame, BASE_DIR, globals())
@@ -551,7 +553,7 @@ try:
 
 
     def save_map(world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL, inventory_chest,
-                 chests, inventory_items, furnaces):
+                 chests, inventory_items, furnaces, saplings):
         global world_name
         if not os.path.exists("saves"):
             os.makedirs("saves")
@@ -569,11 +571,11 @@ try:
             pickle.dump(
                 (world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y,
                  player_world_x, player_world_y, SURVIVAL, inventory_chest, chests,
-                 inventory_items, furnaces, world_name), file)
+                 inventory_items, furnaces, saplings, world_name), file)
 
 
     def load_world(filepath):
-        global world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL, inventory_chest, chests, inventory, world_name, furnaces
+        global world, torches, private_blocks, homes, GameMode, scroll_x, scroll_y, player, SURVIVAL, inventory_chest, chests, inventory, world_name, furnaces, saplings
 
         inventory = Inventory()
 
@@ -582,6 +584,8 @@ try:
                 data = pickle.load(file)
                 print(f"Loading {filepath}...")
 
+                if len(data) == 16:
+                    world, torches, private_blocks, homes, GameMode, saved_scroll_x, saved_scroll_y, player_world_x, player_world_y, SURVIVAL, inventory_chest, chests, inventory.items, furnaces, saplings, world_name = data
                 if len(data) == 15:
                     world, torches, private_blocks, homes, GameMode, saved_scroll_x, saved_scroll_y, player_world_x, player_world_y, SURVIVAL, inventory_chest, chests, inventory.items, furnaces, world_name = data
                 if len(data) == 14:
@@ -827,6 +831,7 @@ try:
         fog_surface.fill((0, 0, 0, 0))
         screen.fill(BLUE)
         update_furnaces()
+        update_saplings(globals())
 
         # fog_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         # fog_surface.fill(FOG_COLOR)
@@ -1270,6 +1275,12 @@ try:
                                 if target_block in [0, 100500] and block_below == 2:
                                     world[world_y][world_x][1] = 1
                                     world[world_y][world_x][0] = block_to_place
+                                    saplings.append({
+                                        "x": world_x,
+                                        "y": world_y,
+                                        "plant_time": time.time(),
+                                        "type": block_to_place
+                                    })
                                 else:
                                     pass
                             elif target_block in [0, 100500]:
@@ -1277,8 +1288,8 @@ try:
                                     world[world_y][world_x][0] = 55
                                 elif target_block == 55:
                                     world[world_y][world_x][0] = 54
-                                else:
-                                    world[world_y][world_x][0] = block_to_place
+                                # else:
+                                #     world[world_y][world_x][0] = block_to_place
 
                                 try:
                                     if block_nearby and world[world_y][world_x][0] in [0, 100500]:
@@ -1294,7 +1305,7 @@ try:
                                                 chests.append({
                                                     "x": world_x,
                                                     "y": world_y,
-                                                    "layer": ActiveLayer,
+                                                    "layer": ActiveLaaaaayer,
                                                     "items": [[0, 0] for _ in range(18)]
                                                 })
 
@@ -1550,8 +1561,11 @@ try:
                                                         if above_block in [56, 57, 58, 59, 60, 61]:
                                                             world[ny - 1][nx][0] = 100500
                                                             world[ny - 1][nx][1] = 1
+                                                            saplings = [s for s in saplings if not (s["x"] == nx and s["y"] == ny - 1)]
+
                                                     world[ny][nx][0] = 100500
                                                     world[ny][nx][1] = 1
+                                                    saplings = [s for s in saplings if not (s["x"] == nx and s["y"] == ny)]
                                         elif world[ny][nx][1] == 2 and world[ny][nx][0] == 54:
                                             dstr = damage_block(nx, ny)
                                             if dstr == 1:
@@ -1793,7 +1807,7 @@ try:
             screen.blit(current_texture, player)
 
         for dynamite in dynamites:
-            dynamite.update(world)
+            dynamite.update()
             dynamite.draw(textures)
 
         if time.time() - IMMNUNE_TIMER < 10:
