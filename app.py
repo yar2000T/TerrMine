@@ -196,6 +196,7 @@ try:
     SAPLING_TO_TREE = {}
     button_img = None
     button_hover_img = None
+    falling_blocks = []
 
     modules.textures.load(pygame, BASE_DIR, PLAYER_SIZE, TILE_SIZE, screen, SCREEN_WIDTH, SCREEN_HEIGHT, globals())
     modules.sounds.load(pygame, BASE_DIR, globals())
@@ -832,6 +833,8 @@ try:
     last_space_press_time = 0
     space_press_count = 0
     double_press_delay = 0.3
+    max_fall_speed = 0.2
+    sand_gravity = 0.1
 
     running = True
     while running:
@@ -845,6 +848,21 @@ try:
         screen.fill(BLUE)
         update_furnaces()
         update_saplings(globals())
+
+        for fb in falling_blocks[:]:
+            fb["fall_y"] += fb["velocity"]
+            fb["velocity"] = min(fb["velocity"] + sand_gravity, max_fall_speed)
+
+            current_y = int(fb["fall_y"])
+            next_y = current_y + 1
+
+            if next_y >= ROWS or (next_y < ROWS and world[next_y][fb["x"]][0] not in [0, 100500]):
+                world[current_y][fb["x"]][0] = 49
+                world[current_y][fb["x"]][1] = 1
+                falling_blocks.remove(fb)
+            else:
+                if 0 <= current_y < ROWS:
+                    world[current_y][fb["x"]][0] = 100500
 
         # fog_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         # fog_surface.fill(FOG_COLOR)
@@ -1336,7 +1354,23 @@ try:
 
                                             if block_to_place != 13:
                                                 world[world_y][world_x][0] = block_to_place
-                                                if block_to_place != 54:
+                                                if block_to_place == 49:
+                                                    below_y = world_y + 1
+                                                    if below_y < ROWS and world[below_y][world_x][0] in [0, 100500]:
+                                                        if not any(
+                                                                fb["x"] == world_x and int(fb["fall_y"]) == world_y for
+                                                                fb in falling_blocks):
+                                                            falling_blocks.append({
+                                                                "x": world_x,
+                                                                "y": world_y,
+                                                                "fall_y": float(world_y),
+                                                                "velocity": 0.0
+                                                            })
+                                                        world[world_y][world_x][0] = 100500
+                                                    else:
+                                                        world[world_y][world_x][0] = 49
+
+                                                if block_to_place not in [54]:
                                                     world[world_y][world_x][1] = ActiveLayer
                                                 else:
                                                     world[world_y][world_x][1] = 1
@@ -1545,6 +1579,8 @@ try:
                                 if dist <= 4:
                                     if world[ny][nx][0] != 0 and GOD or world[ny][nx][0] != 100:
                                         if world[ny][nx][1] == ActiveLayer:
+                                            if any(fb["x"] == nx and int(fb["fall_y"]) == ny for fb in falling_blocks):
+                                                continue
                                             dstr = damage_block(nx, ny)
                                             if dstr == 1:
                                                 if world[ny][nx][0] in [31, 32, 33, 34, 35, 36, 37]:
@@ -1584,6 +1620,26 @@ try:
                                             if dstr == 1:
                                                 world[ny][nx][0] = 100500
                                                 world[ny][nx][1] = 1
+
+                                        scan_y = ny - 1
+                                        while scan_y >= 0:
+                                            if world[scan_y][nx][0] == 49:
+                                                below_y = scan_y + 1
+                                                if world[below_y][nx][0] in [0, 100500]:
+                                                    if not any(fb["x"] == nx and int(fb["fall_y"]) == scan_y for fb in
+                                                               falling_blocks):
+                                                        falling_blocks.append({
+                                                            "x": nx,
+                                                            "y": scan_y,
+                                                            "fall_y": float(scan_y),
+                                                            "velocity": 0.0
+                                                        })
+                                                    world[scan_y][nx][0] = 100500
+                                                    scan_y -= 1
+                                                else:
+                                                    break
+                                            else:
+                                                break
 
         if player_vel_y == 0.5 and player_movement[0] == 0:
             current_texture = player_textures["idle"]
@@ -1650,6 +1706,11 @@ try:
                         if torch_dist <= LIGHT_RADIUS * TILE_SIZE:
                             in_light_radius = True
                             break
+
+                    for fb in falling_blocks:
+                        px = fb["x"] * TILE_SIZE + scroll_x
+                        py = fb["fall_y"] * TILE_SIZE + scroll_y
+                        screen.blit(textures[49], (px, py))
 
                     if key in visible_tiles or in_light_radius:
                         if tile in textures and tile != 13:
