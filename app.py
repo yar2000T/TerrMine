@@ -523,10 +523,10 @@ try:
     world_selection = WorldSelectionMenu()
 
     buttons = [
-        Button("Play", 180, 200, show_play_menu),
-        Button("Load World", 430, 200, show_worlds),
-        Button("Settings", 300, 400, open_settings),
-        Button("Quit", 300, 500, quit_game)
+        Button("Play", 290, 200, show_play_menu),
+        Button("Load World", 290, 300, show_worlds),
+        Button("Settings", 290, 400, open_settings),
+        Button("Quit", 290, 500, quit_game)
     ]
 
     SURVIVAL = True
@@ -562,7 +562,7 @@ try:
         player_world_y = player.y - scroll_y
 
         if not world_name:
-            world_name = f"World_{int(time.time())}"
+            world_name = f"World_{int(time.strftime("%Y-%m-%d %H"))}"
 
         save_path = os.path.join("saves", f"{world_name}.trrm")
         print(f"Saving to {save_path}...")

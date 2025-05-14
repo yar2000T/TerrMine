@@ -50,7 +50,8 @@ class Console:
         if not self.is_open:
             return
 
-        console_surface = globals_var['pygame'].Surface((globals_var['SCREEN_WIDTH'], globals_var['SCREEN_HEIGHT']), globals_var['pygame'].SRCALPHA)
+        console_surface = globals_var['pygame'].Surface((globals_var['SCREEN_WIDTH'], globals_var['SCREEN_HEIGHT']),
+                                                        globals_var['pygame'].SRCALPHA)
         console_surface.fill((0, 0, 0, 150))
 
         globals_var['screen'].blit(console_surface, (0, globals_var['SCREEN_HEIGHT'] - globals_var['SCREEN_HEIGHT']))
@@ -73,13 +74,16 @@ class PlayerStats:
         self.is_falling = False
 
         self.full_heart = globals_var['pygame'].transform.scale(
-            globals_var['pygame'].image.load(os.path.join(globals_var['BASE_DIR'], "assets\\heart\\full.png")).convert_alpha(globals_var['screen']),
+            globals_var['pygame'].image.load(
+                os.path.join(globals_var['BASE_DIR'], "assets\\heart\\full.png")).convert_alpha(globals_var['screen']),
             (14, 12))
         self.half_heart = globals_var['pygame'].transform.scale(
-            globals_var['pygame'].image.load(os.path.join(globals_var['BASE_DIR'], "assets\\heart\\half.png")).convert_alpha(globals_var['screen']),
+            globals_var['pygame'].image.load(
+                os.path.join(globals_var['BASE_DIR'], "assets\\heart\\half.png")).convert_alpha(globals_var['screen']),
             (14, 12))
         self.empty_heart = globals_var['pygame'].transform.scale(
-            globals_var['pygame'].image.load(os.path.join(globals_var['BASE_DIR'], "assets\\heart\\empty.png")).convert_alpha(globals_var['screen']),
+            globals_var['pygame'].image.load(
+                os.path.join(globals_var['BASE_DIR'], "assets\\heart\\empty.png")).convert_alpha(globals_var['screen']),
             (14, 12))
 
     def draw_hearts(self):
@@ -107,7 +111,8 @@ class Button:
 
     def __init__(self, text, x, y, action):
         self.text = text
-        self.rect = globals_var['pygame'].Rect(x, y, globals_var['button_img'].get_width(), globals_var['button_img'].get_height())
+        self.rect = globals_var['pygame'].Rect(x, y, globals_var['button_img'].get_width(),
+                                               globals_var['button_img'].get_height())
         self.action = action
         self.hovered = False
 
@@ -131,7 +136,8 @@ class Button:
 class Inventory:
     def __init__(self):
         if not globals_var['SURVIVAL']:
-            self.items = [[56, 1], [57, 1], [58, 1], [59, 1], [60, 1], [61, 1], [1, 1], [2, 1], [3, 1], [47, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1],
+            self.items = [[56, 1], [57, 1], [58, 1], [59, 1], [60, 1], [61, 1], [1, 1], [2, 1], [3, 1], [47, 1], [4, 1],
+                          [5, 1], [6, 1], [7, 1], [8, 1],
                           [9, 1], [16, 1], [17, 1], [18, 1], [19, 1], [10, 1], [11, 1], [12, 1],
                           [13, 1], [14, 1], [15, 1], [20, 1], [21, 1], [22, 1], [23, 1], [24, 1],
                           [25, 1], [26, 1], [29, 1], [30, 1], [31, 1], [32, 1], [33, 1], [34, 1],
@@ -278,15 +284,21 @@ class Dynamite:
 
     def draw(self, textures):
         if self.exploded:
-            globals_var['screen'].blit(globals_var['explosion_img'], ((self.x * globals_var['TILE_SIZE'] + globals_var['scroll_x']) - globals_var['explosion_img'].get_width() // 2,
-                                        (self.y * globals_var['TILE_SIZE'] + globals_var['scroll_y']) - globals_var['explosion_img'].get_height() // 2))
+            globals_var['screen'].blit(globals_var['explosion_img'], (
+            (self.x * globals_var['TILE_SIZE'] + globals_var['scroll_x']) - globals_var[
+                'explosion_img'].get_width() // 2,
+            (self.y * globals_var['TILE_SIZE'] + globals_var['scroll_y']) - globals_var[
+                'explosion_img'].get_height() // 2))
         else:
             tnt_texture = globals_var['textures'][13].copy()
             if self.blink_state:
                 tnt_texture.set_alpha(150)
-                globals_var['screen'].blit(tnt_texture, (self.x * globals_var['TILE_SIZE'] + globals_var['scroll_x'], self.y * globals_var['TILE_SIZE'] + globals_var['scroll_y']))
+                globals_var['screen'].blit(tnt_texture, (self.x * globals_var['TILE_SIZE'] + globals_var['scroll_x'],
+                                                         self.y * globals_var['TILE_SIZE'] + globals_var['scroll_y']))
             else:
-                globals_var['screen'].blit(globals_var['textures'][13], (self.x * globals_var['TILE_SIZE'] + globals_var['scroll_x'], self.y * globals_var['TILE_SIZE'] + globals_var['scroll_y']))
+                globals_var['screen'].blit(globals_var['textures'][13], (
+                self.x * globals_var['TILE_SIZE'] + globals_var['scroll_x'],
+                self.y * globals_var['TILE_SIZE'] + globals_var['scroll_y']))
 
 
 class InputBox:
@@ -336,13 +348,13 @@ class InputBox:
         globals_var['screen'].blit(scaled_surface, text_rect)
 
 
-
 class WorldSelectionMenu:
     def __init__(self):
         self.worlds = []
         self.scroll_offset = 0
         self.selected_world = None
-        self.load_button = Button("Load", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] - 100, self.load_selected)
+        self.load_button = Button("Load", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] - 100,
+                                  self.load_selected)
         self.back_button = Button("Back", 50, 50, self.back)
         self.refresh_worlds()
 
@@ -421,21 +433,26 @@ class WorldSelectionMenu:
                     self.scroll_offset += 1
 
 
+def resume():
+    globals_var['PAUSED'] = False
+
+
 class PauseMenu:
     def __init__(self):
         self.buttons = [
-            Button("Resume", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] // 2 - 100, self.resume),
-            Button("Main Menu", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] // 2 - 30, self.main_menu),
-            Button("Exit", globals_var['SCREEN_WIDTH'] // 2 - 100, globals_var['SCREEN_HEIGHT'] // 2 + 40, self.exit_game)
+            Button("Resume", globals_var['SCREEN_WIDTH'] // 2 - 120, globals_var['SCREEN_HEIGHT'] // 2 - 100,
+                   resume),
+            Button("Main Menu", globals_var['SCREEN_WIDTH'] // 2 - 120, globals_var['SCREEN_HEIGHT'] // 2 - 30,
+                   self.main_menu),
+            Button("Exit", globals_var['SCREEN_WIDTH'] // 2 - 120, globals_var['SCREEN_HEIGHT'] // 2 + 40,
+                   self.exit_game)
         ]
 
-    def resume(self):
-        globals_var['PAUSED'] = False
-
     def main_menu(self):
-        global PAUSED, running, MENU
-        globals_var['save_map'](globals_var['world'], globals_var['torches'], globals_var['private_blocks'], globals_var['homes'],
-                                globals_var['GameMode'], globals_var['scroll_x'], globals_var['scroll_y'], globals_var['player'],
+        globals_var['save_map'](globals_var['world'], globals_var['torches'], globals_var['private_blocks'],
+                                globals_var['homes'],
+                                globals_var['GameMode'], globals_var['scroll_x'], globals_var['scroll_y'],
+                                globals_var['player'],
                                 globals_var['SURVIVAL'], globals_var['inventory_chest'], globals_var['chests'],
                                 globals_var['inventory'].items, globals_var['furnaces'], globals_var['saplings'])
         globals_var['PAUSED'] = False
@@ -443,20 +460,23 @@ class PauseMenu:
         globals_var['MENU'] = True
 
     def exit_game(self):
-        global running
-        globals_var['save_map'](globals_var['world'], globals_var['torches'], globals_var['private_blocks'], globals_var['homes'],
-                                globals_var['GameMode'], globals_var['scroll_x'], globals_var['scroll_y'], globals_var['player'],
+        globals_var['save_map'](globals_var['world'], globals_var['torches'], globals_var['private_blocks'],
+                                globals_var['homes'],
+                                globals_var['GameMode'], globals_var['scroll_x'], globals_var['scroll_y'],
+                                globals_var['player'],
                                 globals_var['SURVIVAL'], globals_var['inventory_chest'], globals_var['chests'],
                                 globals_var['inventory'].items, globals_var['furnaces'], globals_var['saplings'])
         globals_var['running'] = False
 
     def draw(self):
-        overlay = globals_var['pygame'].Surface((globals_var['SCREEN_WIDTH'], globals_var['SCREEN_HEIGHT']), globals_var['pygame'].SRCALPHA)
+        overlay = globals_var['pygame'].Surface((globals_var['SCREEN_WIDTH'], globals_var['SCREEN_HEIGHT']),
+                                                globals_var['pygame'].SRCALPHA)
         overlay.fill((0, 0, 0, 150))
         globals_var['screen'].blit(overlay, (0, 0))
 
         title = globals_var['font1'].render("Game Paused", True, globals_var['WHITE'])
-        globals_var['screen'].blit(title, (globals_var['SCREEN_WIDTH'] // 2 - title.get_width() // 2, globals_var['SCREEN_HEIGHT'] // 2 - 150))
+        globals_var['screen'].blit(title, (
+        globals_var['SCREEN_WIDTH'] // 2 - title.get_width() // 2, globals_var['SCREEN_HEIGHT'] // 2 - 150))
 
         for button in self.buttons:
             button.draw()
